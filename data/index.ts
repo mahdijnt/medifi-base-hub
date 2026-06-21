@@ -1,6 +1,3 @@
-export { identity, socialLinks } from "./identity";
-
-export const siteConfig = {
-  name: "Medifi Base Hub",
-  description: "Onchain builder on Base ecosystem",
-} as const;
+export { identity, socialLinks, socialImages, socialPlatforms } from "./identity";
+export type { SocialPlatform } from "./identity";
+export { siteConfig } from "./site";
