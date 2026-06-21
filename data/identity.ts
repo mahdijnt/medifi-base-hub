@@ -1,7 +1,7 @@
 export const identity = {
   name: "Mehdi",
   bio: "Onchain builder on Base ecosystem",
-  avatar: "/images/profile/mehdi.png",
+  avatar: "images/profile/mehdi.png",
 } as const;
 
 export const socialPlatforms = [
@@ -15,11 +15,11 @@ export const socialPlatforms = [
 export type SocialPlatform = (typeof socialPlatforms)[number];
 
 export const socialImages: Record<SocialPlatform, string> = {
-  x: "/images/social/x.png",
-  farcaster: "/images/social/farcaster.png",
-  github: "/images/social/github.png",
-  base: "/images/social/base.png",
-  linkedin: "/images/social/linkedin.png",
+  x: "images/social/x.png",
+  farcaster: "images/social/farcaster.png",
+  github: "images/social/github.png",
+  base: "images/social/base.png",
+  linkedin: "images/social/linkedin.png",
 };
 
 export const socialLinks = [

@@ -32,8 +32,6 @@ jobs:
 
       - name: Build static export
         run: npm run build
-        env:
-          NEXT_PUBLIC_BASE_PATH: /medifi-base-hub
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

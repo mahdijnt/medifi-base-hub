@@ -28,24 +28,20 @@ Static files are written to `out/`.
 
 ### GitHub project pages
 
-For a repository deployed at `https://<user>.github.io/<repo>/`, set the base path before building:
+`next.config.ts` applies `basePath` and `assetPrefix` (`/medifi-base-hub`) automatically when `NODE_ENV=production`. Local `npm run dev` serves from the site root without the prefix.
 
 ```bash
 # macOS / Linux
-NEXT_PUBLIC_BASE_PATH=/medifi-base-hub npm run build
+NODE_ENV=production npm run build
 
 # Windows (PowerShell)
-$env:NEXT_PUBLIC_BASE_PATH="/medifi-base-hub"; npm run build
+$env:NODE_ENV='production'; npm run build
 ```
-
-Or copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_BASE_PATH`.
 
 ## Deploy to GitHub Pages
 
 1. In the repository **Settings → Pages**, set **Source** to **GitHub Actions**.
-2. Push to `main`. The workflow in `.github/workflows/deploy.yml` builds with `NEXT_PUBLIC_BASE_PATH=/medifi-base-hub` and publishes `out/`.
-
-For a user/org site (`username.github.io`), leave `NEXT_PUBLIC_BASE_PATH` unset in the workflow.
+2. Push to `main`. The workflow in `.github/workflows/deploy.yml` runs `npm run build` (production) and publishes `out/`.
 
 ## Project structure
 
