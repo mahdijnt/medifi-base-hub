@@ -6,6 +6,7 @@
   --muted: #71717a;
   --border: #e4e4e7;
   --surface: #f4f4f5;
+  --glow: rgba(24, 24, 27, 0.12);
 }
 
 @theme inline {
@@ -25,6 +26,7 @@
     --muted: #a1a1aa;
     --border: #27272a;
     --surface: #18181b;
+    --glow: rgba(250, 250, 250, 0.15);
   }
 }
 

@@ -1,5 +1,5 @@
-import { Hero } from "@/components/hero";
+import { IdentityHub } from "@/components/identity-hub";
 
 export default function Home() {
-  return <Hero />;
+  return <IdentityHub />;
 }
