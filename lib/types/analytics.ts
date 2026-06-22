@@ -31,3 +31,41 @@ export type NftAnalytics = {
 };
 
 export type NftAnalyticsResult = { data: NftAnalytics } | { error: string };
+
+export type DeployedContract = {
+  address: string;
+  deployedAt: Date;
+};
+
+export type ContractDeploymentAnalytics = {
+  total: number;
+  contracts: DeployedContract[];
+};
+
+export type ContractDeploymentAnalyticsResult =
+  | { data: ContractDeploymentAnalytics }
+  | { error: string };
+
+export type CombinedBuilderTotals = {
+  transactions: number;
+  nfts: number;
+  contracts: number;
+};
+
+export type WalletMetricsBreakdown = {
+  id: string;
+  name: string;
+  transactions: number;
+  nfts: number;
+  contracts: number;
+  errors?: string[];
+};
+
+export type CombinedBuilderMetrics = {
+  totals: CombinedBuilderTotals;
+  perWallet: WalletMetricsBreakdown[];
+};
+
+export type CombinedBuilderMetricsResult =
+  | { data: CombinedBuilderMetrics }
+  | { error: string };

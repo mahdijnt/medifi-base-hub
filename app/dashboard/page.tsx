@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import {
+  CombinedMetrics,
   DashboardHeader,
   WalletAnalytics,
 } from "@/components/dashboard";
@@ -22,6 +23,7 @@ export default function DashboardPage() {
           title="Base Wallet Analytics Dashboard"
           description="This dashboard will display onchain analytics for Base-related wallets."
         />
+        <CombinedMetrics />
         <WalletAnalytics />
       </div>
     </section>

@@ -1,3 +1,5 @@
+export { CombinedMetrics } from "./combined-metrics";
+export { ContractsList } from "./contracts-list";
 export { DashboardHeader } from "./dashboard-header";
 export { MetricCard } from "./metric-card";
 export { MetricsGrid } from "./metrics-grid";

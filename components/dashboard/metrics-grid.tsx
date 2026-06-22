@@ -1,5 +1,9 @@
 import { FadeIn } from "@/components/ui/fade-in";
-import type { NftAnalytics, TransactionAnalytics } from "@/lib/types/analytics";
+import type {
+  ContractDeploymentAnalytics,
+  NftAnalytics,
+  TransactionAnalytics,
+} from "@/lib/types/analytics";
 import { MetricCard } from "./metric-card";
 
 const STAGGER_MS = 120;
@@ -8,10 +12,13 @@ const MAX_VISIBLE_COLLECTIONS = 3;
 type MetricsGridProps = {
   transactionAnalytics: TransactionAnalytics | null;
   nftAnalytics: NftAnalytics | null;
+  contractAnalytics: ContractDeploymentAnalytics | null;
   txLoading: boolean;
   nftLoading: boolean;
+  contractLoading: boolean;
   txError: string | null;
   nftError: string | null;
+  contractError: string | null;
 };
 
 function formatTransactionDate(date: Date | null): string {
@@ -62,10 +69,13 @@ function formatCollections(
 export function MetricsGrid({
   transactionAnalytics,
   nftAnalytics,
+  contractAnalytics,
   txLoading,
   nftLoading,
+  contractLoading,
   txError,
   nftError,
+  contractError,
 }: MetricsGridProps) {
   const metrics = [
     {
@@ -99,11 +109,19 @@ export function MetricsGrid({
       loading: nftLoading,
       compactValue: true,
     },
+    {
+      label: "Contracts Deployed",
+      value: formatTotal(contractAnalytics?.total ?? null, contractLoading),
+      loading: contractLoading,
+    },
   ];
 
   const errors = [
     txError ? { label: "Transaction analytics", message: txError } : null,
     nftError ? { label: "NFT analytics", message: nftError } : null,
+    contractError
+      ? { label: "Contract analytics", message: contractError }
+      : null,
   ].filter((entry): entry is { label: string; message: string } => entry !== null);
 
   return (
@@ -130,7 +148,7 @@ export function MetricsGrid({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {metrics.map((metric, index) => (
           <FadeIn
             key={metric.label}

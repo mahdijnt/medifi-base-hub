@@ -5,14 +5,18 @@
  * so `npm run build` succeeds without `.env.local` while analytics clients
  * are unused.
  *
- * BASESCAN_API_KEY is server-only (no NEXT_PUBLIC_ prefix). In this static
- * export app it is not available in the browser; use it only from server-side
- * or build-time code paths. NEXT_PUBLIC_ALCHEMY_API_KEY may be used client-side.
+ * NEXT_PUBLIC_ALCHEMY_API_KEY and NEXT_PUBLIC_BASESCAN_API_KEY may be used
+ * client-side (static export / GitHub Pages). Exposing API keys in the browser
+ * is acceptable for read-only analytics but allows quota abuse — restrict keys
+ * by domain where the provider supports it.
+ *
+ * BASESCAN_API_KEY is a server-only fallback for future API routes or SSR.
  */
 
 const ENV_KEYS = {
   alchemy: "NEXT_PUBLIC_ALCHEMY_API_KEY",
-  basescan: "BASESCAN_API_KEY",
+  basescanPublic: "NEXT_PUBLIC_BASESCAN_API_KEY",
+  basescanServer: "BASESCAN_API_KEY",
 } as const;
 
 function missingKeyError(key: string): Error {
@@ -27,7 +31,10 @@ export function hasAlchemyApiKey(): boolean {
 }
 
 export function hasBasescanApiKey(): boolean {
-  return Boolean(process.env.BASESCAN_API_KEY?.trim());
+  return Boolean(
+    process.env.NEXT_PUBLIC_BASESCAN_API_KEY?.trim() ||
+      process.env.BASESCAN_API_KEY?.trim(),
+  );
 }
 
 export function getAlchemyApiKey(): string {
@@ -39,13 +46,21 @@ export function getAlchemyApiKey(): string {
 }
 
 /**
- * Server-only secret. Throws in environments where the key is unset.
- * Not available in the browser for this static-export site.
+ * Prefers NEXT_PUBLIC_BASESCAN_API_KEY (client dashboard) and falls back to
+ * BASESCAN_API_KEY for server-side use.
  */
 export function getBasescanApiKey(): string {
-  const key = process.env.BASESCAN_API_KEY?.trim();
-  if (!key) {
-    throw missingKeyError(ENV_KEYS.basescan);
+  const publicKey = process.env.NEXT_PUBLIC_BASESCAN_API_KEY?.trim();
+  if (publicKey) {
+    return publicKey;
   }
-  return key;
+
+  const serverKey = process.env.BASESCAN_API_KEY?.trim();
+  if (serverKey) {
+    return serverKey;
+  }
+
+  throw missingKeyError(
+    `${ENV_KEYS.basescanPublic} (or ${ENV_KEYS.basescanServer})`,
+  );
 }
