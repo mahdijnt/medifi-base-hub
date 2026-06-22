@@ -12,10 +12,13 @@ import type {
   NftAnalytics,
   TransactionAnalytics,
 } from "@/lib/types/analytics";
-import { getAllWallets } from "@/lib/walletRegistry";
+import type { Wallet } from "@/types/wallet";
 
-export function WalletAnalytics() {
-  const wallets = getAllWallets();
+type WalletAnalyticsProps = {
+  wallets: Wallet[];
+};
+
+export function WalletAnalytics({ wallets }: WalletAnalyticsProps) {
   const [selectedId, setSelectedId] = useState(() => wallets[0]?.id ?? "");
   const [transactionAnalytics, setTransactionAnalytics] =
     useState<TransactionAnalytics | null>(null);
@@ -28,6 +31,17 @@ export function WalletAnalytics() {
   const [txError, setTxError] = useState<string | null>(null);
   const [nftError, setNftError] = useState<string | null>(null);
   const [contractError, setContractError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (wallets.length === 0) {
+      setSelectedId("");
+      return;
+    }
+
+    if (!wallets.some((wallet) => wallet.id === selectedId)) {
+      setSelectedId(wallets[0].id);
+    }
+  }, [wallets, selectedId]);
 
   const selectedWallet = wallets.find((wallet) => wallet.id === selectedId);
   const selectedAddress = selectedWallet?.address;
@@ -43,11 +57,6 @@ export function WalletAnalytics() {
       setTxError(null);
       setNftError(null);
       setContractError(null);
-      setTxError(
-        wallets.length === 0
-          ? "No wallets are configured in the registry."
-          : null,
-      );
       return;
     }
 
@@ -106,7 +115,11 @@ export function WalletAnalytics() {
     return () => {
       cancelled = true;
     };
-  }, [selectedAddress, wallets.length]);
+  }, [selectedAddress]);
+
+  if (wallets.length === 0) {
+    return null;
+  }
 
   return (
     <div className="space-y-8">

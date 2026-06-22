@@ -1,7 +1,15 @@
+export { AnalyzeButton } from "./analyze-button";
 export { CombinedMetrics } from "./combined-metrics";
 export { ContractsList } from "./contracts-list";
 export { DashboardHeader } from "./dashboard-header";
+export { DashboardHero } from "./dashboard-hero";
+export { DashboardIntroCard } from "./dashboard-intro-card";
+export { LoadBuilderWalletsButton } from "./load-builder-wallets-button";
+export { DashboardShell } from "./dashboard-shell";
 export { MetricCard } from "./metric-card";
 export { MetricsGrid } from "./metrics-grid";
+export { SupportedWalletTypes } from "./supported-wallet-types";
+export { WalletAddressPanel } from "./wallet-address-panel";
+export type { WalletAddresses } from "@/types/wallet";
 export { WalletAnalytics } from "./wallet-analytics";
 export { WalletSelector } from "./wallet-selector";

@@ -7,6 +7,7 @@ const STAGGER_MS = 120;
 type WalletBreakdownGridProps = {
   wallets: WalletMetricsBreakdown[] | null;
   loading: boolean;
+  placeholderCount?: number;
 };
 
 function formatCount(value: number, loading: boolean): string {
@@ -88,9 +89,10 @@ function WalletBreakdownCard({ wallet, loading }: WalletBreakdownCardProps) {
 export function WalletBreakdownGrid({
   wallets,
   loading,
+  placeholderCount = 3,
 }: WalletBreakdownGridProps) {
   const placeholderWallets: WalletMetricsBreakdown[] = loading
-    ? Array.from({ length: 3 }, (_, index) => ({
+    ? Array.from({ length: placeholderCount }, (_, index) => ({
         id: `placeholder-${index}`,
         name: "Loading...",
         transactions: 0,

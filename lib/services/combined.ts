@@ -7,7 +7,7 @@ import type {
   CombinedBuilderMetricsResult,
   WalletMetricsBreakdown,
 } from "@/lib/types/analytics";
-import { getAllWallets } from "@/lib/walletRegistry";
+import type { Wallet } from "@/types/wallet";
 
 const EMPTY_TOTALS = { transactions: 0, nfts: 0, contracts: 0 };
 
@@ -104,13 +104,13 @@ function aggregateTotals(
 }
 
 /**
- * Aggregates transaction, NFT, and contract deployment analytics across all
- * registered wallets. Per-wallet fetch failures are logged and counted as zero
+ * Aggregates transaction, NFT, and contract deployment analytics across the
+ * provided wallets. Per-wallet fetch failures are logged and counted as zero
  * so the rest of the aggregation can continue.
  */
-export async function getCombinedBuilderMetrics(): Promise<CombinedBuilderMetricsResult> {
-  const wallets = getAllWallets();
-
+export async function getCombinedBuilderMetrics(
+  wallets: Wallet[],
+): Promise<CombinedBuilderMetricsResult> {
   if (wallets.length === 0) {
     return {
       data: {

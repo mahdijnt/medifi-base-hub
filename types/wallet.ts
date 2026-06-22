@@ -6,3 +6,9 @@ export interface Wallet {
   address: string;
   category: WalletCategory;
 }
+
+export type WalletAddresses = {
+  base: string;
+  farcaster: string;
+  baseapp: string;
+};

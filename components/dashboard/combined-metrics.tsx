@@ -1,50 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { CombinedSummary } from "@/components/dashboard/combined-summary";
 import { WalletBreakdownGrid } from "@/components/dashboard/wallet-breakdown-grid";
 import { FadeIn } from "@/components/ui/fade-in";
-import { getCombinedBuilderMetrics } from "@/lib/services/combined";
 import type { CombinedBuilderMetrics } from "@/lib/types/analytics";
 
 const STAGGER_MS = 120;
 
-export function CombinedMetrics() {
-  const [metrics, setMetrics] = useState<CombinedBuilderMetrics | null>(null);
-  const [combinedLoading, setCombinedLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+type CombinedMetricsProps = {
+  metrics: CombinedBuilderMetrics | null;
+  loading: boolean;
+  error: string | null;
+  walletCount: number;
+};
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadCombinedMetrics() {
-      setCombinedLoading(true);
-      setError(null);
-
-      const result = await getCombinedBuilderMetrics();
-
-      if (cancelled) {
-        return;
-      }
-
-      if ("error" in result) {
-        setMetrics(null);
-        setError(result.error);
-      } else {
-        setMetrics(result.data);
-        setError(null);
-      }
-
-      setCombinedLoading(false);
-    }
-
-    void loadCombinedMetrics();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+export function CombinedMetrics({
+  metrics,
+  loading,
+  error,
+  walletCount,
+}: CombinedMetricsProps) {
   return (
     <section aria-labelledby="combined-metrics-heading" className="space-y-6">
       <FadeIn duration={450}>
@@ -83,12 +58,13 @@ export function CombinedMetrics() {
 
       <CombinedSummary
         totals={metrics?.totals ?? null}
-        loading={combinedLoading}
+        loading={loading}
       />
 
       <WalletBreakdownGrid
         wallets={metrics?.perWallet ?? null}
-        loading={combinedLoading}
+        loading={loading}
+        placeholderCount={walletCount}
       />
     </section>
   );
