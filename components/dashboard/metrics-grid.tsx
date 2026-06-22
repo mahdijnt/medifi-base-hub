@@ -1,13 +1,17 @@
 import { FadeIn } from "@/components/ui/fade-in";
-import type { TransactionAnalytics } from "@/lib/types/analytics";
+import type { NftAnalytics, TransactionAnalytics } from "@/lib/types/analytics";
 import { MetricCard } from "./metric-card";
 
 const STAGGER_MS = 120;
+const MAX_VISIBLE_COLLECTIONS = 3;
 
 type MetricsGridProps = {
-  analytics: TransactionAnalytics | null;
-  loading: boolean;
-  error: string | null;
+  transactionAnalytics: TransactionAnalytics | null;
+  nftAnalytics: NftAnalytics | null;
+  txLoading: boolean;
+  nftLoading: boolean;
+  txError: string | null;
+  nftError: string | null;
 };
 
 function formatTransactionDate(date: Date | null): string {
@@ -34,25 +38,73 @@ function formatTotal(total: number | null, loading: boolean): string {
   return total.toLocaleString("en-US");
 }
 
-export function MetricsGrid({ analytics, loading, error }: MetricsGridProps) {
+function formatCollections(
+  collections: string[] | null,
+  loading: boolean,
+): string {
+  if (loading) {
+    return "Loading...";
+  }
+
+  if (!collections || collections.length === 0) {
+    return "—";
+  }
+
+  if (collections.length <= MAX_VISIBLE_COLLECTIONS) {
+    return collections.join(", ");
+  }
+
+  const visible = collections.slice(0, MAX_VISIBLE_COLLECTIONS).join(", ");
+  const remaining = collections.length - MAX_VISIBLE_COLLECTIONS;
+  return `${visible} +${remaining} more`;
+}
+
+export function MetricsGrid({
+  transactionAnalytics,
+  nftAnalytics,
+  txLoading,
+  nftLoading,
+  txError,
+  nftError,
+}: MetricsGridProps) {
   const metrics = [
     {
       label: "Total Transactions",
-      value: formatTotal(analytics?.total ?? null, loading),
+      value: formatTotal(transactionAnalytics?.total ?? null, txLoading),
+      loading: txLoading,
     },
     {
       label: "First Transaction Date",
-      value: loading
+      value: txLoading
         ? "Loading..."
-        : formatTransactionDate(analytics?.firstTx ?? null),
+        : formatTransactionDate(transactionAnalytics?.firstTx ?? null),
+      loading: txLoading,
     },
     {
       label: "Last Transaction Date",
-      value: loading
+      value: txLoading
         ? "Loading..."
-        : formatTransactionDate(analytics?.lastTx ?? null),
+        : formatTransactionDate(transactionAnalytics?.lastTx ?? null),
+      loading: txLoading,
+    },
+    {
+      label: "NFT Count",
+      value: formatTotal(nftAnalytics?.total ?? null, nftLoading),
+      loading: nftLoading,
+      compactValue: false,
+    },
+    {
+      label: "NFT Collections",
+      value: formatCollections(nftAnalytics?.collections ?? null, nftLoading),
+      loading: nftLoading,
+      compactValue: true,
     },
   ];
+
+  const errors = [
+    txError ? { label: "Transaction analytics", message: txError } : null,
+    nftError ? { label: "NFT analytics", message: nftError } : null,
+  ].filter((entry): entry is { label: string; message: string } => entry !== null);
 
   return (
     <div className="space-y-4">
@@ -62,18 +114,23 @@ export function MetricsGrid({ analytics, loading, error }: MetricsGridProps) {
         </h2>
       </FadeIn>
 
-      {error ? (
-        <FadeIn delay={STAGGER_MS * 4} duration={500}>
-          <p
-            role="alert"
-            className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
-          >
-            {error}
-          </p>
-        </FadeIn>
+      {errors.length > 0 ? (
+        <div className="space-y-3">
+          {errors.map((entry) => (
+            <FadeIn key={entry.label} delay={STAGGER_MS * 4} duration={500}>
+              <p
+                role="alert"
+                className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
+              >
+                <span className="font-medium">{entry.label}:</span>{" "}
+                {entry.message}
+              </p>
+            </FadeIn>
+          ))}
+        </div>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {metrics.map((metric, index) => (
           <FadeIn
             key={metric.label}
@@ -83,7 +140,8 @@ export function MetricsGrid({ analytics, loading, error }: MetricsGridProps) {
             <MetricCard
               label={metric.label}
               value={metric.value}
-              loading={loading}
+              loading={metric.loading}
+              compactValue={metric.compactValue}
             />
           </FadeIn>
         ))}

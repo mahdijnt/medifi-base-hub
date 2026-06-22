@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import {
   DashboardHeader,
-  TransactionAnalytics,
+  WalletAnalytics,
 } from "@/components/dashboard";
 import { siteConfig } from "@/data";
 
@@ -22,7 +22,7 @@ export default function DashboardPage() {
           title="Base Wallet Analytics Dashboard"
           description="This dashboard will display onchain analytics for Base-related wallets."
         />
-        <TransactionAnalytics />
+        <WalletAnalytics />
       </div>
     </section>
   );

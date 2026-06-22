@@ -24,3 +24,10 @@ export type TransactionAnalytics = {
 export type TransactionAnalyticsResult =
   | { data: TransactionAnalytics }
   | { error: string };
+
+export type NftAnalytics = {
+  total: number;
+  collections: string[];
+};
+
+export type NftAnalyticsResult = { data: NftAnalytics } | { error: string };

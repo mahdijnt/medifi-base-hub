@@ -4,8 +4,24 @@ import type { WalletData } from "@/lib/types/analytics";
 /** Alchemy JSON-RPC base URL for Base mainnet (API key appended per request). */
 export const ALCHEMY_BASE_URL = "https://base-mainnet.g.alchemy.com/v2/";
 
+/** Alchemy NFT REST API base URL for Base mainnet (API key appended per request). */
+export const ALCHEMY_NFT_BASE_URL = "https://base-mainnet.g.alchemy.com/nft/v3/";
+
 function getAlchemyUrl(): string {
   return `${ALCHEMY_BASE_URL}${getAlchemyApiKey()}`;
+}
+
+function getAlchemyNftUrl(
+  endpoint: string,
+  params?: Record<string, string>,
+): string {
+  const path = `${ALCHEMY_NFT_BASE_URL}${getAlchemyApiKey()}/${endpoint}`;
+  if (!params || Object.keys(params).length === 0) {
+    return path;
+  }
+
+  const search = new URLSearchParams(params);
+  return `${path}?${search.toString()}`;
 }
 
 type JsonRpcError = {
@@ -54,6 +70,33 @@ export async function alchemyRequest<T>(
   }
 
   return json.result;
+}
+
+/**
+ * Shared request helper for Alchemy NFT REST endpoints (v3).
+ */
+export async function alchemyNftRequest<T>(
+  endpoint: string,
+  params?: Record<string, string>,
+): Promise<T> {
+  const response = await fetch(getAlchemyNftUrl(endpoint, params));
+
+  if (!response.ok) {
+    let detail = "";
+    try {
+      const body = (await response.json()) as { message?: string };
+      detail = body.message?.trim() ?? "";
+    } catch {
+      // Response body may not be JSON.
+    }
+
+    const suffix = detail ? `: ${detail}` : "";
+    throw new Error(
+      `Alchemy NFT API request failed (${response.status} ${response.statusText})${suffix}`,
+    );
+  }
+
+  return (await response.json()) as T;
 }
 
 /** Fetch aggregated wallet data for an address. Stub — no network calls yet. */

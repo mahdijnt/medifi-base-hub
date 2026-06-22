@@ -4,9 +4,15 @@ type MetricCardProps = {
   label: string;
   value: string;
   loading?: boolean;
+  compactValue?: boolean;
 };
 
-export function MetricCard({ label, value, loading = false }: MetricCardProps) {
+export function MetricCard({
+  label,
+  value,
+  loading = false,
+  compactValue = false,
+}: MetricCardProps) {
   return (
     <article
       className={cn(
@@ -35,7 +41,8 @@ export function MetricCard({ label, value, loading = false }: MetricCardProps) {
 
           <p
             className={cn(
-              "mt-2 font-mono text-3xl font-semibold tracking-tight",
+              "mt-2 font-mono font-semibold tracking-tight",
+              compactValue ? "text-base leading-snug" : "text-3xl",
               loading ? "text-foreground/40" : "text-foreground",
             )}
             aria-busy={loading}
