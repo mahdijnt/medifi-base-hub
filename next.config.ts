@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
-const isProd = process.env.NODE_ENV === "production";
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 const nextConfig: NextConfig = {
-  basePath: isProd ? "/medifi-base-hub" : "",
-  assetPrefix: isProd ? "/medifi-base-hub/" : "",
+  basePath,
+  assetPrefix: basePath ? `${basePath}/` : "",
   output: "export",
   trailingSlash: true,
   images: {

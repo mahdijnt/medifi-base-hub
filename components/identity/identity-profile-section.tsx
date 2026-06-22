@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { identity } from "@/data/identity";
+import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 
 export function IdentityProfileSection() {
@@ -27,7 +28,7 @@ export function IdentityProfileSection() {
             aria-hidden="true"
           />
           <Image
-            src={identity.avatar}
+            src={withBasePath(identity.avatar)}
             alt={`${identity.name} profile`}
             width={88}
             height={88}

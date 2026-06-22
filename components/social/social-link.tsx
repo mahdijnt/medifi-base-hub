@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Tooltip } from "@/components/ui/tooltip";
+import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 
 type SocialLinkProps = {
@@ -33,7 +34,7 @@ export function SocialLink({
         )}
       >
         <Image
-          src={image}
+          src={withBasePath(image)}
           alt=""
           width={24}
           height={24}

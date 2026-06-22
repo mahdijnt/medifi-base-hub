@@ -1,10 +1,11 @@
-const PRODUCTION_BASE_PATH = "/medifi-base-hub";
+import { getBasePath } from "@/lib/base-path";
 
 export function normalizePathname(pathname: string): string {
   let path = pathname;
+  const basePath = getBasePath();
 
-  if (PRODUCTION_BASE_PATH && path.startsWith(PRODUCTION_BASE_PATH)) {
-    path = path.slice(PRODUCTION_BASE_PATH.length) || "/";
+  if (basePath && path.startsWith(basePath)) {
+    path = path.slice(basePath.length) || "/";
   }
 
   if (path.length > 1 && path.endsWith("/")) {
