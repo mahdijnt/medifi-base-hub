@@ -1,4 +1,5 @@
 import { IdentityHub } from "@/components/identity";
+import { FeaturedProjects } from "@/components/projects";
 import { BuilderStory } from "@/components/story";
 
 export default function Home() {
@@ -6,6 +7,7 @@ export default function Home() {
     <>
       <IdentityHub />
       <BuilderStory />
+      <FeaturedProjects />
     </>
   );
 }
