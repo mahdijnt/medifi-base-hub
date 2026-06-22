@@ -9,19 +9,19 @@ const wallets: Wallet[] = [
   {
     id: "base-main",
     name: "Main Base Wallet",
-    address: "0x0000000000000000000000000000000000000001",
+    address: "0x46Eee482F09f242Be431948d077070ea27Ff5336",
     category: "base",
   },
   {
     id: "farcaster",
     name: "Farcaster Wallet",
-    address: "0x0000000000000000000000000000000000000002",
+    address: "0xd3a08079a4bf3e07a682de3ae4390f21c5c0e40a",
     category: "farcaster",
   },
   {
     id: "baseapp",
     name: "Base App Wallet",
-    address: "0x0000000000000000000000000000000000000003",
+    address: "0x4fc9455ce62a0b4bb7a39986ee65d5c932dd0361",
     category: "baseapp",
   },
 ];

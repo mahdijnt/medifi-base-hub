@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
+import { Navbar } from "@/components/navigation";
 
 type AppLayoutProps = {
   children: React.ReactNode;
