@@ -14,3 +14,13 @@ export interface Transaction {
   timestamp?: number;
   blockNumber?: number;
 }
+
+export type TransactionAnalytics = {
+  total: number;
+  firstTx: Date | null;
+  lastTx: Date | null;
+};
+
+export type TransactionAnalyticsResult =
+  | { data: TransactionAnalytics }
+  | { error: string };
