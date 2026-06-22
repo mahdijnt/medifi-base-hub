@@ -6,3 +6,5 @@ export { featuredProjects } from "./projects";
 export type { Project, ProjectStatus } from "./projects";
 export { currentGoals } from "./goals";
 export type { Goal, GoalTag } from "./goals";
+export { builderStats } from "./stats";
+export type { BuilderStat } from "./stats";
