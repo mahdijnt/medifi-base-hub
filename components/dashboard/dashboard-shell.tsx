@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { getCombinedBuilderMetrics } from "@/lib/services/combined";
+import { getTransactionAnalytics } from "@/lib/services/transactions";
 import {
   BUILDER_WALLET_ADDRESSES,
   validateAddressesForAnalyze,
@@ -18,6 +19,11 @@ import { LoadBuilderWalletsButton } from "./load-builder-wallets-button";
 import { SupportedWalletTypes } from "./supported-wallet-types";
 import { WalletAnalytics } from "./wallet-analytics";
 import { WalletAddressPanel } from "./wallet-address-panel";
+import {
+  TransactionMetricsSection,
+  type TransactionMetrics,
+  type TransactionsState,
+} from "./transaction-metrics-section";
 import type { WalletAddresses } from "@/types/wallet";
 
 const STAGGER_MS = 120;
@@ -27,6 +33,37 @@ const EMPTY_ADDRESSES: WalletAddresses = {
   farcaster: "",
   baseapp: "",
 };
+
+type TransactionWalletKey = keyof TransactionsState;
+
+const TRANSACTION_WALLET_FIELDS: Array<{
+  addressKey: keyof WalletAddresses;
+  stateKey: TransactionWalletKey;
+}> = [
+  { addressKey: "base", stateKey: "main" },
+  { addressKey: "farcaster", stateKey: "farcaster" },
+  { addressKey: "baseapp", stateKey: "baseapp" },
+];
+
+function buildTransactionLoadingState(
+  addresses: WalletAddresses,
+): TransactionsState {
+  const state: TransactionsState = {};
+
+  for (const { addressKey, stateKey } of TRANSACTION_WALLET_FIELDS) {
+    const address = addresses[addressKey].trim();
+    if (address) {
+      state[stateKey] = {
+        total: 0,
+        firstTx: null,
+        lastTx: null,
+        loading: true,
+      };
+    }
+  }
+
+  return state;
+}
 
 type AnalyzePhase = "idle" | "loading" | "results" | "error";
 
@@ -46,6 +83,46 @@ export function DashboardShell() {
   >();
   const [activeWallets, setActiveWallets] = useState<Wallet[]>([]);
   const [walletCount, setWalletCount] = useState(0);
+  const [transactions, setTransactions] = useState<TransactionsState>({});
+
+  const fetchTransactionMetrics = useCallback(
+    async (addressesToAnalyze: WalletAddresses) => {
+      const walletsToFetch = TRANSACTION_WALLET_FIELDS.flatMap(
+        ({ addressKey, stateKey }) => {
+          const address = addressesToAnalyze[addressKey].trim();
+          return address ? [{ stateKey, address }] : [];
+        },
+      );
+
+      await Promise.all(
+        walletsToFetch.map(async ({ stateKey, address }) => {
+          const result = await getTransactionAnalytics(address);
+
+          const metrics: TransactionMetrics =
+            "error" in result
+              ? {
+                  total: 0,
+                  firstTx: null,
+                  lastTx: null,
+                  loading: false,
+                  error: result.error,
+                }
+              : {
+                  total: result.data.total,
+                  firstTx: result.data.firstTx,
+                  lastTx: result.data.lastTx,
+                  loading: false,
+                };
+
+          setTransactions((previous) => ({
+            ...previous,
+            [stateKey]: metrics,
+          }));
+        }),
+      );
+    },
+    [],
+  );
 
   const runAnalyze = useCallback(async (addressesToAnalyze: WalletAddresses) => {
     const validation = validateAddressesForAnalyze(addressesToAnalyze);
@@ -61,8 +138,12 @@ export function DashboardShell() {
     setActiveWallets(validation.wallets);
     setWalletCount(validation.wallets.length);
     setMetrics(null);
+    setTransactions(buildTransactionLoadingState(addressesToAnalyze));
 
-    const result = await getCombinedBuilderMetrics(validation.wallets);
+    const [result] = await Promise.all([
+      getCombinedBuilderMetrics(validation.wallets),
+      fetchTransactionMetrics(addressesToAnalyze),
+    ]);
 
     if ("error" in result) {
       setMetrics(null);
@@ -73,7 +154,7 @@ export function DashboardShell() {
 
     setMetrics(result.data);
     setAnalyzePhase("results");
-  }, []);
+  }, [fetchTransactionMetrics]);
 
   function clearWalletErrors() {
     setFormError(undefined);
@@ -185,6 +266,8 @@ export function DashboardShell() {
                 error={analyzeError}
                 walletCount={walletCount}
               />
+
+              <TransactionMetricsSection transactions={transactions} />
 
               {analyzePhase === "results" && activeWallets.length > 0 ? (
                 <WalletAnalytics wallets={activeWallets} />
