@@ -7,6 +7,7 @@ export {
 export {
   BASESCAN_API_URL,
   basescanRequest,
+  getDeployedContracts,
   getTransactions,
 } from "@/lib/api/basescan";
 
