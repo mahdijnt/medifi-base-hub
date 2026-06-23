@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { getCombinedBuilderMetrics } from "@/lib/services/combined";
+import { getNftAnalytics } from "@/lib/services/nft";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
 import {
   BUILDER_WALLET_ADDRESSES,
@@ -19,6 +20,11 @@ import { LoadBuilderWalletsButton } from "./load-builder-wallets-button";
 import { SupportedWalletTypes } from "./supported-wallet-types";
 import { WalletAnalytics } from "./wallet-analytics";
 import { WalletAddressPanel } from "./wallet-address-panel";
+import {
+  NftMetricsSection,
+  type NFTMetrics,
+  type NftsState,
+} from "./nft-metrics-section";
 import {
   TransactionMetricsSection,
   type TransactionMetrics,
@@ -65,6 +71,23 @@ function buildTransactionLoadingState(
   return state;
 }
 
+function buildNftLoadingState(addresses: WalletAddresses): NftsState {
+  const state: NftsState = {};
+
+  for (const { addressKey, stateKey } of TRANSACTION_WALLET_FIELDS) {
+    const address = addresses[addressKey].trim();
+    if (address) {
+      state[stateKey] = {
+        total: 0,
+        collections: [],
+        loading: true,
+      };
+    }
+  }
+
+  return state;
+}
+
 type AnalyzePhase = "idle" | "loading" | "results" | "error";
 
 export function DashboardShell() {
@@ -84,6 +107,7 @@ export function DashboardShell() {
   const [activeWallets, setActiveWallets] = useState<Wallet[]>([]);
   const [walletCount, setWalletCount] = useState(0);
   const [transactions, setTransactions] = useState<TransactionsState>({});
+  const [nfts, setNfts] = useState<NftsState>({});
 
   const fetchTransactionMetrics = useCallback(
     async (addressesToAnalyze: WalletAddresses) => {
@@ -124,6 +148,43 @@ export function DashboardShell() {
     [],
   );
 
+  const fetchNftMetrics = useCallback(
+    async (addressesToAnalyze: WalletAddresses) => {
+      const walletsToFetch = TRANSACTION_WALLET_FIELDS.flatMap(
+        ({ addressKey, stateKey }) => {
+          const address = addressesToAnalyze[addressKey].trim();
+          return address ? [{ stateKey, address }] : [];
+        },
+      );
+
+      await Promise.all(
+        walletsToFetch.map(async ({ stateKey, address }) => {
+          const result = await getNftAnalytics(address);
+
+          const metrics: NFTMetrics =
+            "error" in result
+              ? {
+                  total: 0,
+                  collections: [],
+                  loading: false,
+                  error: result.error,
+                }
+              : {
+                  total: result.data.total,
+                  collections: result.data.collections,
+                  loading: false,
+                };
+
+          setNfts((previous) => ({
+            ...previous,
+            [stateKey]: metrics,
+          }));
+        }),
+      );
+    },
+    [],
+  );
+
   const runAnalyze = useCallback(async (addressesToAnalyze: WalletAddresses) => {
     const validation = validateAddressesForAnalyze(addressesToAnalyze);
 
@@ -139,10 +200,12 @@ export function DashboardShell() {
     setWalletCount(validation.wallets.length);
     setMetrics(null);
     setTransactions(buildTransactionLoadingState(addressesToAnalyze));
+    setNfts(buildNftLoadingState(addressesToAnalyze));
 
     const [result] = await Promise.all([
       getCombinedBuilderMetrics(validation.wallets),
       fetchTransactionMetrics(addressesToAnalyze),
+      fetchNftMetrics(addressesToAnalyze),
     ]);
 
     if ("error" in result) {
@@ -154,7 +217,7 @@ export function DashboardShell() {
 
     setMetrics(result.data);
     setAnalyzePhase("results");
-  }, [fetchTransactionMetrics]);
+  }, [fetchTransactionMetrics, fetchNftMetrics]);
 
   function clearWalletErrors() {
     setFormError(undefined);
@@ -268,6 +331,8 @@ export function DashboardShell() {
               />
 
               <TransactionMetricsSection transactions={transactions} />
+
+              <NftMetricsSection nfts={nfts} />
 
               {analyzePhase === "results" && activeWallets.length > 0 ? (
                 <WalletAnalytics wallets={activeWallets} />

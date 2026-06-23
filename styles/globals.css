@@ -66,3 +66,25 @@ body {
     );
   }
 }
+
+.nft-skeleton-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.12) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nft-skeleton-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(96, 165, 250, 0.18) 50%,
+      transparent 100%
+    );
+  }
+}
