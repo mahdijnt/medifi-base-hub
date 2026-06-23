@@ -9,3 +9,12 @@ export {
   basescanRequest,
   getTransactions,
 } from "@/lib/api/basescan";
+
+export {
+  getCommitCountForRepo,
+  getPublicRepoCount,
+  getTotalCommitCount,
+  getUserRepos,
+  getWeb3RepoCount,
+  isWeb3Repo,
+} from "@/lib/api/github";

@@ -1,10 +1,18 @@
 import { FadeIn } from "@/components/ui/fade-in";
-import { currentGoals } from "@/data/goals";
+import { currentGoals, type Goal } from "@/data/goals";
 import { GoalCard } from "./goal-card";
 
 const STAGGER_MS = 150;
 
-export function CurrentGoals() {
+type CurrentGoalsProps = {
+  goals?: Goal[];
+  loading?: boolean;
+};
+
+export function CurrentGoals({
+  goals = currentGoals,
+  loading = false,
+}: CurrentGoalsProps) {
   return (
     <section aria-labelledby="current-goals-heading" className="pb-16 sm:pb-20">
       <div className="mx-auto w-full max-w-5xl space-y-6">
@@ -32,13 +40,13 @@ export function CurrentGoals() {
         </FadeIn>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {currentGoals.map((goal, index) => (
+          {goals.map((goal, index) => (
             <FadeIn
               key={goal.id}
               delay={STAGGER_MS * 2 + index * STAGGER_MS}
               duration={500}
             >
-              <GoalCard goal={goal} />
+              <GoalCard goal={goal} loading={loading} />
             </FadeIn>
           ))}
         </div>

@@ -12,9 +12,10 @@ const tagStyles: Record<GoalTag, string> = {
 
 type GoalCardProps = {
   goal: Goal;
+  loading?: boolean;
 };
 
-export function GoalCard({ goal }: GoalCardProps) {
+export function GoalCard({ goal, loading = false }: GoalCardProps) {
   return (
     <article
       className={cn(
@@ -50,12 +51,15 @@ export function GoalCard({ goal }: GoalCardProps) {
               aria-hidden="true"
             >
               <div
-                className="h-full rounded-full bg-gradient-to-r from-foreground/40 to-foreground/70 transition-none"
-                style={{ width: `${goal.progress}%` }}
+                className="h-full rounded-full bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-cyan)]"
+                style={{
+                  width: loading ? "0%" : `${goal.progress}%`,
+                  transition: "width 160ms ease-out",
+                }}
               />
             </div>
             <p className="text-right font-mono text-[10px] text-muted">
-              {goal.progress}%
+              {loading ? "…" : `${goal.progress}%`}
             </p>
           </div>
 

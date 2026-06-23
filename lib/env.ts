@@ -17,6 +17,8 @@ const ENV_KEYS = {
   alchemy: "NEXT_PUBLIC_ALCHEMY_API_KEY",
   basescanPublic: "NEXT_PUBLIC_BASESCAN_API_KEY",
   basescanServer: "BASESCAN_API_KEY",
+  githubPublic: "NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN",
+  githubServer: "GITHUB_PERSONAL_ACCESS_TOKEN",
 } as const;
 
 function missingKeyError(key: string): Error {
@@ -62,5 +64,33 @@ export function getBasescanApiKey(): string {
 
   throw missingKeyError(
     `${ENV_KEYS.basescanPublic} (or ${ENV_KEYS.basescanServer})`,
+  );
+}
+
+/**
+ * Prefers NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN (required for static export
+ * client fetch) and falls back to GITHUB_PERSONAL_ACCESS_TOKEN for server use.
+ */
+export function hasGithubToken(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN?.trim() ||
+      process.env.GITHUB_PERSONAL_ACCESS_TOKEN?.trim(),
+  );
+}
+
+export function getGithubToken(): string {
+  const publicToken =
+    process.env.NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN?.trim();
+  if (publicToken) {
+    return publicToken;
+  }
+
+  const serverToken = process.env.GITHUB_PERSONAL_ACCESS_TOKEN?.trim();
+  if (serverToken) {
+    return serverToken;
+  }
+
+  throw missingKeyError(
+    `${ENV_KEYS.githubPublic} (or ${ENV_KEYS.githubServer})`,
   );
 }

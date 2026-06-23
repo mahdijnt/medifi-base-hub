@@ -1,7 +1,8 @@
 import { IdentityHub } from "@/components/identity";
-import { CurrentGoals } from "@/components/goals";
+import { GoalsWithData } from "@/components/goals";
+import { PortfolioSection } from "@/components/portfolio";
 import { FeaturedProjects } from "@/components/projects";
-import { BuilderStats } from "@/components/stats";
+import { BuilderSnapshot } from "@/components/home";
 import { BuilderStory } from "@/components/story";
 
 export default function Home() {
@@ -10,8 +11,9 @@ export default function Home() {
       <IdentityHub />
       <BuilderStory />
       <FeaturedProjects />
-      <CurrentGoals />
-      <BuilderStats />
+      <PortfolioSection />
+      <GoalsWithData />
+      <BuilderSnapshot />
     </>
   );
 }
