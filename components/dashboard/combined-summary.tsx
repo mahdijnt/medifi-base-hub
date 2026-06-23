@@ -1,4 +1,5 @@
 import { FadeIn } from "@/components/ui/fade-in";
+import { MetricSkeleton } from "@/components/loading";
 import type { CombinedBuilderTotals } from "@/lib/types/analytics";
 import { MetricCard } from "./metric-card";
 
@@ -9,11 +10,7 @@ type CombinedSummaryProps = {
   loading: boolean;
 };
 
-function formatTotal(total: number | null, loading: boolean): string {
-  if (loading) {
-    return "Loading...";
-  }
-
+function formatTotal(total: number | null): string {
   if (total === null) {
     return "--";
   }
@@ -21,19 +18,39 @@ function formatTotal(total: number | null, loading: boolean): string {
   return total.toLocaleString("en-US");
 }
 
+const METRIC_LABELS = [
+  "Total Transactions",
+  "Total NFTs",
+  "Total Contracts",
+] as const;
+
 export function CombinedSummary({ totals, loading }: CombinedSummaryProps) {
+  if (loading) {
+    return (
+      <div
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        aria-busy="true"
+        aria-label="Loading combined metrics"
+      >
+        {METRIC_LABELS.map((label) => (
+          <MetricSkeleton key={label} />
+        ))}
+      </div>
+    );
+  }
+
   const metrics = [
     {
-      label: "Total Transactions",
-      value: formatTotal(totals?.transactions ?? null, loading),
+      label: METRIC_LABELS[0],
+      value: formatTotal(totals?.transactions ?? null),
     },
     {
-      label: "Total NFTs",
-      value: formatTotal(totals?.nfts ?? null, loading),
+      label: METRIC_LABELS[1],
+      value: formatTotal(totals?.nfts ?? null),
     },
     {
-      label: "Total Contracts",
-      value: formatTotal(totals?.contracts ?? null, loading),
+      label: METRIC_LABELS[2],
+      value: formatTotal(totals?.contracts ?? null),
     },
   ];
 
@@ -45,11 +62,7 @@ export function CombinedSummary({ totals, loading }: CombinedSummaryProps) {
           delay={STAGGER_MS * 2 + index * STAGGER_MS}
           duration={500}
         >
-          <MetricCard
-            label={metric.label}
-            value={metric.value}
-            loading={loading}
-          />
+          <MetricCard label={metric.label} value={metric.value} />
         </FadeIn>
       ))}
     </div>

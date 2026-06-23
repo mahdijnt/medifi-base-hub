@@ -1,4 +1,5 @@
 import { FadeIn } from "@/components/ui/fade-in";
+import { WalletBreakdownSkeleton } from "@/components/loading";
 import type { WalletMetricsBreakdown } from "@/lib/types/analytics";
 import { cn } from "@/lib/utils";
 
@@ -10,20 +11,15 @@ type WalletBreakdownGridProps = {
   placeholderCount?: number;
 };
 
-function formatCount(value: number, loading: boolean): string {
-  if (loading) {
-    return "Loading...";
-  }
-
+function formatCount(value: number): string {
   return value.toLocaleString("en-US");
 }
 
 type WalletBreakdownCardProps = {
   wallet: WalletMetricsBreakdown;
-  loading: boolean;
 };
 
-function WalletBreakdownCard({ wallet, loading }: WalletBreakdownCardProps) {
+function WalletBreakdownCard({ wallet }: WalletBreakdownCardProps) {
   const stats = [
     { label: "Transactions", value: wallet.transactions },
     { label: "NFTs", value: wallet.nfts },
@@ -62,14 +58,8 @@ function WalletBreakdownCard({ wallet, loading }: WalletBreakdownCardProps) {
             {stats.map((stat) => (
               <div key={stat.label}>
                 <dt className="text-xs font-medium text-muted">{stat.label}</dt>
-                <dd
-                  className={cn(
-                    "mt-1 font-mono text-lg font-semibold tracking-tight",
-                    loading ? "text-foreground/40" : "text-foreground",
-                  )}
-                  aria-busy={loading}
-                >
-                  {formatCount(stat.value, loading)}
+                <dd className="mt-1 font-mono text-lg font-semibold tracking-tight text-foreground">
+                  {formatCount(stat.value)}
                 </dd>
               </div>
             ))}
@@ -91,17 +81,7 @@ export function WalletBreakdownGrid({
   loading,
   placeholderCount = 3,
 }: WalletBreakdownGridProps) {
-  const placeholderWallets: WalletMetricsBreakdown[] = loading
-    ? Array.from({ length: placeholderCount }, (_, index) => ({
-        id: `placeholder-${index}`,
-        name: "Loading...",
-        transactions: 0,
-        nfts: 0,
-        contracts: 0,
-      }))
-    : [];
-
-  const items = loading ? placeholderWallets : (wallets ?? []);
+  const items = wallets ?? [];
 
   return (
     <div className="space-y-4">
@@ -111,17 +91,29 @@ export function WalletBreakdownGrid({
         </h2>
       </FadeIn>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((wallet, index) => (
-          <FadeIn
-            key={wallet.id}
-            delay={STAGGER_MS * 6 + index * STAGGER_MS}
-            duration={500}
-          >
-            <WalletBreakdownCard wallet={wallet} loading={loading} />
-          </FadeIn>
-        ))}
-      </div>
+      {loading ? (
+        <div
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          aria-busy="true"
+          aria-label="Loading per-wallet breakdown"
+        >
+          {Array.from({ length: placeholderCount }).map((_, index) => (
+            <WalletBreakdownSkeleton key={`skeleton-${index}`} />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((wallet, index) => (
+            <FadeIn
+              key={wallet.id}
+              delay={STAGGER_MS * 6 + index * STAGGER_MS}
+              duration={500}
+            >
+              <WalletBreakdownCard wallet={wallet} />
+            </FadeIn>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
