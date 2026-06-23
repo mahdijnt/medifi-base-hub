@@ -1,5 +1,6 @@
 import type { WalletAddresses } from "@/types/wallet";
 import type { Wallet, WalletCategory } from "@/types/wallet";
+import { isValidEthereumAddress } from "@/utils/validateWallet";
 
 export const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
@@ -36,7 +37,7 @@ const WALLET_FIELD_CONFIG: Array<{
 ];
 
 export function isValidEthAddress(value: string): boolean {
-  return ETH_ADDRESS_REGEX.test(value.trim());
+  return isValidEthereumAddress(value);
 }
 
 /**

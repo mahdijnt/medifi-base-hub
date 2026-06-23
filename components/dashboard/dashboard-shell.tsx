@@ -8,6 +8,7 @@ import {
 } from "@/lib/runtimeWalletRegistry";
 import type { CombinedBuilderMetrics } from "@/lib/types/analytics";
 import type { Wallet } from "@/types/wallet";
+import { validateWalletForm } from "@/utils/validateWallet";
 import { FadeIn } from "@/components/ui/fade-in";
 import { AnalyzeButton } from "./analyze-button";
 import { CombinedMetrics } from "./combined-metrics";
@@ -35,6 +36,14 @@ export function DashboardShell() {
   const [metrics, setMetrics] = useState<CombinedBuilderMetrics | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | undefined>();
+  const [mainWalletError, setMainWalletError] = useState<string | undefined>();
+  const [farcasterWalletError, setFarcasterWalletError] = useState<
+    string | undefined
+  >();
+  const [baseAppWalletError, setBaseAppWalletError] = useState<
+    string | undefined
+  >();
   const [activeWallets, setActiveWallets] = useState<Wallet[]>([]);
   const [walletCount, setWalletCount] = useState(0);
 
@@ -66,13 +75,44 @@ export function DashboardShell() {
     setAnalyzePhase("results");
   }, []);
 
+  function clearWalletErrors() {
+    setFormError(undefined);
+    setMainWalletError(undefined);
+    setFarcasterWalletError(undefined);
+    setBaseAppWalletError(undefined);
+  }
+
   function handleAnalyze() {
+    const validation = validateWalletForm({
+      main: addresses.base,
+      farcaster: addresses.farcaster,
+      baseApp: addresses.baseapp,
+    });
+
+    if (!validation.valid) {
+      setFormError(validation.formError);
+      setMainWalletError(validation.fieldErrors?.main);
+      setFarcasterWalletError(validation.fieldErrors?.farcaster);
+      setBaseAppWalletError(validation.fieldErrors?.baseApp);
+      return;
+    }
+
+    clearWalletErrors();
     void runAnalyze(addresses);
   }
 
   function handleLoadBuilderWallets() {
+    clearWalletErrors();
+    setValidationError(null);
     setAddresses(BUILDER_WALLET_ADDRESSES);
     void runAnalyze(BUILDER_WALLET_ADDRESSES);
+  }
+
+  function handleAddressesChange(next: WalletAddresses) {
+    setAddresses(next);
+    if (formError || mainWalletError || farcasterWalletError || baseAppWalletError) {
+      clearWalletErrors();
+    }
   }
 
   const isAnalyzing = analyzePhase === "loading";
@@ -91,8 +131,24 @@ export function DashboardShell() {
         <div className="space-y-6">
           <WalletAddressPanel
             addresses={addresses}
-            onChange={setAddresses}
+            onChange={handleAddressesChange}
+            errors={{
+              base: mainWalletError,
+              farcaster: farcasterWalletError,
+              baseapp: baseAppWalletError,
+            }}
           />
+
+          {formError ? (
+            <FadeIn duration={400}>
+              <p
+                role="alert"
+                className="text-sm text-red-400/90"
+              >
+                {formError}
+              </p>
+            </FadeIn>
+          ) : null}
 
           {validationError ? (
             <FadeIn duration={400}>

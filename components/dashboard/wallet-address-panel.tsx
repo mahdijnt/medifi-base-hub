@@ -3,6 +3,7 @@
 import { useState, type ChangeEvent } from "react";
 import { FadeIn } from "@/components/ui/fade-in";
 import type { WalletAddresses } from "@/types/wallet";
+import { validateWalletField } from "@/utils/validateWallet";
 import { cn } from "@/lib/utils";
 import { SectionBadge } from "./section-badge";
 import {
@@ -13,15 +14,12 @@ import {
 
 const STAGGER_MS = 120;
 
-const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
-
-export type { WalletAddresses };
-
 type WalletField = keyof WalletAddresses;
 
 type WalletAddressPanelProps = {
   addresses: WalletAddresses;
   onChange: (addresses: WalletAddresses) => void;
+  errors?: Partial<Record<WalletField, string | undefined>>;
 };
 
 const FIELDS: Array<{
@@ -46,13 +44,12 @@ const FIELDS: Array<{
   },
 ];
 
-function isValidEthAddress(value: string): boolean {
-  return value.trim() === "" || ETH_ADDRESS_REGEX.test(value.trim());
-}
+export type { WalletAddresses };
 
 export function WalletAddressPanel({
   addresses,
   onChange,
+  errors,
 }: WalletAddressPanelProps) {
   const [touched, setTouched] = useState<Partial<Record<WalletField, boolean>>>(
     {},
@@ -98,8 +95,13 @@ export function WalletAddressPanel({
             <div className="relative space-y-5">
               {FIELDS.map((field) => {
                 const value = addresses[field.key];
+                const fieldValidation = validateWalletField(value);
+                const parentError = errors?.[field.key];
                 const showError =
-                  touched[field.key] && !isValidEthAddress(value);
+                  !!parentError ||
+                  (touched[field.key] && !fieldValidation.valid);
+                const errorMessage =
+                  parentError ?? fieldValidation.error;
 
                 return (
                   <div key={field.key} className="space-y-2">
@@ -133,13 +135,13 @@ export function WalletAddressPanel({
                           : "border-border focus:border-foreground/20",
                       )}
                     />
-                    {showError ? (
+                    {showError && errorMessage ? (
                       <p
                         id={`wallet-${field.key}-error`}
-                        className="text-xs text-red-400/90"
+                        className="text-sm text-red-400/90"
                         role="status"
                       >
-                        Enter a valid Ethereum address (0x + 40 hex characters).
+                        {errorMessage}
                       </p>
                     ) : null}
                   </div>
