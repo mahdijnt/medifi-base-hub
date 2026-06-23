@@ -8,11 +8,11 @@ import {
   glassRadialGlow,
 } from "./glass-styles";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 export function DashboardIntroCard() {
   return (
-    <FadeIn delay={STAGGER_MS} duration={500}>
+    <FadeIn delay={STAGGER_MS}>
       <article
         className={cn(
           glassGradientBorder,

@@ -8,8 +8,15 @@ import {
 } from "@/components/loading";
 import { FadeIn } from "@/components/ui/fade-in";
 import { cn } from "@/lib/utils";
+import { getAccentLabelClass, getContrastTextClass } from "@/utils/color/autoTextColor";
+import {
+  dashInteractiveBorder,
+  dashInteractiveHoverGlow,
+  dashPrimaryGlow,
+  dashPrimarySurface,
+} from "./glass-styles";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 export type ContractMetrics = {
   total: number;
@@ -49,31 +56,37 @@ type ContractMetricCardProps = {
 
 function ContractMetricCard({ label, value }: ContractMetricCardProps) {
   return (
-    <article
-      className={cn(
-        "group relative rounded-xl p-px",
-        "bg-gradient-to-br from-blue-500/25 via-blue-400/10 to-blue-600/5",
-        "transition-transform duration-300 ease-out hover:scale-[1.02]",
-      )}
-    >
+    <article className={cn("group relative rounded-xl p-px", dashInteractiveBorder)}>
       <div
         className={cn(
           "relative flex h-full flex-col rounded-[11px] p-5",
-          "border border-blue-500/20 bg-blue-500/[0.06] backdrop-blur-[12px]",
-          "shadow-sm shadow-blue-500/10 transition-shadow duration-300",
-          "group-hover:shadow-[0_0_24px_-4px_rgba(59,130,246,0.35)]",
+          dashPrimarySurface,
+          dashInteractiveHoverGlow,
         )}
       >
         <div
-          className="pointer-events-none absolute inset-0 rounded-[11px] bg-[radial-gradient(ellipse_at_top_right,rgba(59,130,246,0.2),transparent_60%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          className={cn(
+            dashPrimaryGlow,
+            "opacity-0 transition-opacity duration-300 group-hover:opacity-100",
+          )}
           aria-hidden="true"
         />
 
         <div className="relative flex flex-1 flex-col">
-          <p className="text-sm font-medium text-blue-200/70 dark:text-blue-300/70">
+          <p
+            className={cn(
+              "text-sm font-medium",
+              getContrastTextClass("glow-blue", "label"),
+            )}
+          >
             {label}
           </p>
-          <p className="mt-2 font-mono text-4xl font-bold tracking-tight text-foreground">
+          <p
+            className={cn(
+              "mt-2 font-mono text-4xl font-bold tracking-tight",
+              getContrastTextClass("glow-blue", "value"),
+            )}
+          >
             {value}
           </p>
         </div>
@@ -93,12 +106,19 @@ function WalletContractCard({ walletKey, metrics }: WalletContractCardProps) {
   if (metrics.loading) {
     return (
       <div className="space-y-4">
-        <h3 className="text-base font-semibold tracking-tight text-foreground">
+        <h3
+          className={cn(
+            "text-base font-semibold tracking-tight",
+            getContrastTextClass("glass", "heading"),
+          )}
+        >
           {label}
         </h3>
         <ContractMetricSkeleton />
         <div className="space-y-2">
-          <p className="text-sm font-medium text-blue-300/60">Deployments</p>
+          <p className={cn("text-sm font-medium", getAccentLabelClass("secondary"))}>
+            Deployments
+          </p>
           <ContractListSkeleton />
         </div>
       </div>
@@ -108,12 +128,17 @@ function WalletContractCard({ walletKey, metrics }: WalletContractCardProps) {
   if (metrics.error) {
     return (
       <div className="space-y-3">
-        <h3 className="text-base font-semibold tracking-tight text-foreground">
+        <h3
+          className={cn(
+            "text-base font-semibold tracking-tight",
+            getContrastTextClass("glass", "heading"),
+          )}
+        >
           {label}
         </h3>
         <p
           role="alert"
-          className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
+          className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-400"
         >
           {metrics.error}
         </p>
@@ -124,10 +149,20 @@ function WalletContractCard({ walletKey, metrics }: WalletContractCardProps) {
   if (isEmptyMetrics(metrics)) {
     return (
       <div className="space-y-3">
-        <h3 className="text-base font-semibold tracking-tight text-foreground">
+        <h3
+          className={cn(
+            "text-base font-semibold tracking-tight",
+            getContrastTextClass("glass", "heading"),
+          )}
+        >
           {label}
         </h3>
-        <p className="rounded-lg border border-blue-500/15 bg-blue-500/[0.04] px-4 py-3 text-sm text-muted backdrop-blur-sm">
+        <p
+          className={cn(
+            "rounded-lg border border-[var(--accent-blue)]/15 bg-[var(--accent-blue)]/[0.04] px-4 py-3 text-sm backdrop-blur-sm",
+            getContrastTextClass("glow-blue", "muted"),
+          )}
+        >
           No contracts deployed for this wallet.
         </p>
       </div>
@@ -136,7 +171,12 @@ function WalletContractCard({ walletKey, metrics }: WalletContractCardProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-base font-semibold tracking-tight text-foreground">
+      <h3
+        className={cn(
+          "text-base font-semibold tracking-tight",
+          getContrastTextClass("glass", "heading"),
+        )}
+      >
         {label}
       </h3>
 
@@ -148,7 +188,9 @@ function WalletContractCard({ walletKey, metrics }: WalletContractCardProps) {
       </div>
 
       <div className="space-y-3">
-        <p className="text-sm font-medium text-blue-300/70">Deployments</p>
+        <p className={cn("text-sm font-medium", getAccentLabelClass("secondary"))}>
+          Deployments
+        </p>
         <ContractList contracts={metrics.contracts} />
       </div>
     </div>
@@ -167,21 +209,21 @@ export function ContractMetricsSection({
 
   return (
     <section aria-labelledby="contract-metrics-heading" className="space-y-6">
-      <FadeIn duration={450}>
+      <FadeIn>
         <div className="flex items-center gap-3">
           <span
-            className="inline-flex size-8 items-center justify-center rounded-lg border border-blue-500/30 bg-blue-500/10 font-mono text-[10px] font-medium text-blue-300 shadow-sm shadow-blue-500/20"
+            className="inline-flex size-8 items-center justify-center rounded-lg border border-[var(--accent-blue)]/22 bg-[var(--accent-blue)]/8 font-mono text-[10px] font-medium text-blue-800 shadow-sm shadow-[var(--glow-blue-soft)] dark:text-blue-200"
             aria-hidden="true"
           >
             SC
           </span>
-          <p className="text-xs font-medium uppercase tracking-widest text-blue-300/70">
+          <p className={`text-xs font-medium uppercase tracking-widest ${getAccentLabelClass("primary")}`}>
             Contract Analytics
           </p>
         </div>
       </FadeIn>
 
-      <FadeIn delay={STAGGER_MS} duration={500}>
+      <FadeIn delay={STAGGER_MS}>
         <h2
           id="contract-metrics-heading"
           className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl"
@@ -204,11 +246,7 @@ export function ContractMetricsSection({
           }
 
           return (
-            <FadeIn
-              key={walletKey}
-              delay={STAGGER_MS * 2 + index * STAGGER_MS}
-              duration={500}
-            >
+            <FadeIn key={walletKey} delay={STAGGER_MS * 2 + index * STAGGER_MS}>
               <WalletContractCard walletKey={walletKey} metrics={metrics} />
             </FadeIn>
           );

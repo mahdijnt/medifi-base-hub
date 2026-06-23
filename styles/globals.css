@@ -7,6 +7,16 @@
   --border: #e4e4e7;
   --surface: #f4f4f5;
   --glow: rgba(24, 24, 27, 0.12);
+
+  /* Dashboard palette — primary blue, secondary teal/cyan, interactive purple-blue */
+  --accent-blue: #3b82f6;
+  --accent-teal: #14b8a6;
+  --accent-cyan: #06b6d4;
+  --accent-purple: #8b5cf6;
+  --glow-blue-soft: rgba(59, 130, 246, 0.18);
+  --glow-teal-soft: rgba(20, 184, 166, 0.15);
+  --glow-cyan-soft: rgba(6, 182, 212, 0.14);
+  --glow-purple-soft: rgba(139, 92, 246, 0.16);
 }
 
 @theme inline {
@@ -15,6 +25,10 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-surface: var(--surface);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-teal: var(--accent-teal);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-accent-purple: var(--accent-purple);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -27,6 +41,11 @@
     --border: #27272a;
     --surface: #18181b;
     --glow: rgba(250, 250, 250, 0.15);
+
+    --glow-blue-soft: rgba(59, 130, 246, 0.22);
+    --glow-teal-soft: rgba(20, 184, 166, 0.18);
+    --glow-cyan-soft: rgba(6, 182, 212, 0.17);
+    --glow-purple-soft: rgba(139, 92, 246, 0.2);
   }
 }
 
@@ -61,7 +80,7 @@ body {
     background-image: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.12) 50%,
+      rgba(255, 255, 255, 0.1) 50%,
       transparent 100%
     );
   }
@@ -71,7 +90,7 @@ body {
   background-image: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(59, 130, 246, 0.12) 50%,
+    color-mix(in srgb, var(--accent-blue) 14%, transparent) 50%,
     transparent 100%
   );
   background-size: 200% 100%;
@@ -83,7 +102,7 @@ body {
     background-image: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(96, 165, 250, 0.18) 50%,
+      color-mix(in srgb, var(--accent-cyan) 20%, transparent) 50%,
       transparent 100%
     );
   }

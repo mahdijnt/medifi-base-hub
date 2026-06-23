@@ -2,9 +2,10 @@
 
 import { FadeIn } from "@/components/ui/fade-in";
 import { MetricSkeleton, StatusMessage } from "@/components/loading";
+import { getAccentLabelClass } from "@/utils/color/autoTextColor";
 import { MetricCard } from "./metric-card";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 export type TransactionMetrics = {
   total: number;
@@ -81,7 +82,7 @@ function WalletTransactionCard({ walletKey, metrics }: WalletTransactionCardProp
         </h3>
         <p
           role="alert"
-          className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
+          className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-400"
         >
           {metrics.error}
         </p>
@@ -145,21 +146,21 @@ export function TransactionMetricsSection({
 
   return (
     <section aria-labelledby="transaction-metrics-heading" className="space-y-6">
-      <FadeIn duration={450}>
+      <FadeIn>
         <div className="flex items-center gap-3">
           <span
-            className="inline-flex size-8 items-center justify-center rounded-lg border border-border bg-surface/60 font-mono text-[10px] font-medium text-muted"
+            className="inline-flex size-8 items-center justify-center rounded-lg border border-[var(--accent-teal)]/22 bg-[var(--accent-teal)]/8 font-mono text-[10px] font-medium text-teal-800 shadow-sm shadow-[var(--glow-teal-soft)] dark:text-teal-200"
             aria-hidden="true"
           >
             TX
           </span>
-          <p className="text-xs font-medium uppercase tracking-widest text-muted">
+          <p className={`text-xs font-medium uppercase tracking-widest ${getAccentLabelClass("secondary")}`}>
             Transaction Analytics
           </p>
         </div>
       </FadeIn>
 
-      <FadeIn delay={STAGGER_MS} duration={500}>
+      <FadeIn delay={STAGGER_MS}>
         <h2
           id="transaction-metrics-heading"
           className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl"
@@ -182,11 +183,7 @@ export function TransactionMetricsSection({
           }
 
           return (
-            <FadeIn
-              key={walletKey}
-              delay={STAGGER_MS * 2 + index * STAGGER_MS}
-              duration={500}
-            >
+            <FadeIn key={walletKey} delay={STAGGER_MS * 2 + index * STAGGER_MS}>
               <WalletTransactionCard walletKey={walletKey} metrics={metrics} />
             </FadeIn>
           );

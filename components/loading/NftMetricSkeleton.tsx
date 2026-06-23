@@ -1,18 +1,8 @@
 import { cn } from "@/lib/utils";
-
-const cardOuterClass = cn(
-  "relative rounded-xl p-px",
-  "bg-gradient-to-br from-blue-500/25 via-blue-400/10 to-blue-600/5",
-);
-
-const cardInnerClass = cn(
-  "relative flex h-full flex-col rounded-[11px] p-5",
-  "border border-blue-500/20 bg-blue-500/[0.06] backdrop-blur-[12px]",
-  "shadow-sm shadow-blue-500/10",
-);
+import { dashPrimaryBorder, dashPrimaryGlow, dashPrimarySurface } from "@/components/dashboard/glass-styles";
 
 const shimmerBarClass =
-  "nft-skeleton-shimmer rounded-md bg-blue-400/10 dark:bg-blue-400/15";
+  "nft-skeleton-shimmer rounded-md bg-[var(--accent-blue)]/10 dark:bg-[var(--accent-cyan)]/12";
 
 type NftMetricSkeletonProps = {
   className?: string;
@@ -21,12 +11,12 @@ type NftMetricSkeletonProps = {
 export function NftMetricSkeleton({ className }: NftMetricSkeletonProps) {
   return (
     <article
-      className={cn(cardOuterClass, className)}
+      className={cn(dashPrimaryBorder, "relative rounded-xl p-px", className)}
       aria-hidden="true"
     >
-      <div className={cardInnerClass}>
+      <div className={cn(dashPrimarySurface, "relative flex h-full flex-col rounded-[11px] p-5")}>
         <div
-          className="pointer-events-none absolute inset-0 rounded-[11px] bg-[radial-gradient(ellipse_at_top_right,rgba(59,130,246,0.25),transparent_60%)] opacity-60"
+          className={cn(dashPrimaryGlow, "opacity-40")}
           aria-hidden="true"
         />
 
@@ -49,7 +39,7 @@ export function NftCollectionSkeleton({ className }: NftMetricSkeletonProps) {
         <div
           key={index}
           className={cn(
-            "h-9 rounded-lg border border-blue-500/15 bg-blue-500/[0.06] backdrop-blur-sm",
+            "h-9 rounded-lg border border-[var(--accent-teal)]/14 bg-[var(--accent-teal)]/[0.05] backdrop-blur-sm",
             shimmerBarClass,
           )}
         />

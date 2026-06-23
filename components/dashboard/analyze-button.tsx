@@ -1,8 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { getContrastTextClass } from "@/utils/color/autoTextColor";
 import {
   glassGradientBorder,
+  glassHoverGlow,
   glassInnerSurface,
   glassRadialGlow,
 } from "./glass-styles";
@@ -34,10 +36,10 @@ export function AnalyzeButton({
           className={cn(
             "group relative overflow-hidden rounded-[15px] px-8 py-3",
             glassInnerSurface,
-            "border-0 font-medium text-foreground",
-            "transition-all duration-300 ease-out",
-            "hover:shadow-[0_0_28px_-4px_var(--glow)]",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20",
+            glassHoverGlow,
+            "border-0 font-medium",
+            getContrastTextClass("interactive", "value"),
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-purple)]/30",
             (disabled || loading) && "cursor-not-allowed hover:shadow-none",
           )}
         >
@@ -52,7 +54,7 @@ export function AnalyzeButton({
           <span className="relative flex items-center gap-2">
             {loading ? (
               <svg
-                className="size-4 animate-spin text-foreground/70"
+                className={cn("size-4 animate-spin", getContrastTextClass("interactive", "muted"))}
                 fill="none"
                 viewBox="0 0 24 24"
                 aria-hidden="true"
@@ -73,7 +75,10 @@ export function AnalyzeButton({
               </svg>
             ) : (
               <svg
-                className="size-4 text-foreground/70 transition-transform duration-300 group-hover:scale-110"
+                className={cn(
+                  "size-4 transition-transform duration-300 group-hover:scale-110",
+                  getContrastTextClass("interactive", "muted"),
+                )}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

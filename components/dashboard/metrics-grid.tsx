@@ -6,7 +6,7 @@ import type {
 } from "@/lib/types/analytics";
 import { MetricCard } from "./metric-card";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 const MAX_VISIBLE_COLLECTIONS = 3;
 
 type MetricsGridProps = {
@@ -126,7 +126,7 @@ export function MetricsGrid({
 
   return (
     <div className="space-y-4">
-      <FadeIn delay={STAGGER_MS * 4} duration={500}>
+      <FadeIn delay={STAGGER_MS * 2}>
         <h2 className="text-sm font-medium uppercase tracking-wider text-muted">
           Metrics
         </h2>
@@ -135,7 +135,7 @@ export function MetricsGrid({
       {errors.length > 0 ? (
         <div className="space-y-3">
           {errors.map((entry) => (
-            <FadeIn key={entry.label} delay={STAGGER_MS * 4} duration={500}>
+            <FadeIn key={entry.label} delay={STAGGER_MS * 2}>
               <p
                 role="alert"
                 className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
@@ -152,8 +152,7 @@ export function MetricsGrid({
         {metrics.map((metric, index) => (
           <FadeIn
             key={metric.label}
-            delay={STAGGER_MS * 5 + index * STAGGER_MS}
-            duration={500}
+            delay={STAGGER_MS * 2 + index * STAGGER_MS}
           >
             <MetricCard
               label={metric.label}

@@ -12,7 +12,7 @@ import {
   glassRadialGlow,
 } from "./glass-styles";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 type WalletField = keyof WalletAddresses;
 
@@ -67,11 +67,11 @@ export function WalletAddressPanel({
 
   return (
     <section aria-labelledby="wallet-address-heading" className="space-y-6">
-      <FadeIn delay={STAGGER_MS * 3} duration={500}>
+      <FadeIn delay={STAGGER_MS}>
         <SectionBadge badge="WA" label="Addresses" />
       </FadeIn>
 
-      <FadeIn delay={STAGGER_MS * 4} duration={500}>
+      <FadeIn delay={STAGGER_MS * 2}>
         <h2
           id="wallet-address-heading"
           className="text-lg font-semibold tracking-tight text-foreground sm:text-xl"
@@ -84,7 +84,7 @@ export function WalletAddressPanel({
         </p>
       </FadeIn>
 
-      <FadeIn delay={STAGGER_MS * 5} duration={500}>
+      <FadeIn delay={STAGGER_MS * 3}>
         <div className={glassGradientBorder}>
           <div className={cn(glassInnerSurface, "p-6 sm:p-7")}>
             <div

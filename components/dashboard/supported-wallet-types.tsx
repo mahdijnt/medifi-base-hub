@@ -8,7 +8,7 @@ import {
   glassRadialGlow,
 } from "./glass-styles";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 const WALLET_TYPES = [
   {
@@ -80,11 +80,11 @@ function WalletTypeCard({
 export function SupportedWalletTypes() {
   return (
     <section aria-labelledby="wallet-types-heading" className="space-y-6">
-      <FadeIn delay={STAGGER_MS * 2} duration={500}>
+      <FadeIn delay={STAGGER_MS}>
         <SectionBadge badge="WT" label="Wallet Types" />
       </FadeIn>
 
-      <FadeIn delay={STAGGER_MS * 3} duration={500}>
+      <FadeIn delay={STAGGER_MS * 2}>
         <h2
           id="wallet-types-heading"
           className="text-lg font-semibold tracking-tight text-foreground sm:text-xl"
@@ -97,8 +97,7 @@ export function SupportedWalletTypes() {
         {WALLET_TYPES.map((wallet, index) => (
           <FadeIn
             key={wallet.id}
-            delay={STAGGER_MS * 4 + index * STAGGER_MS}
-            duration={500}
+            delay={STAGGER_MS * 2 + index * STAGGER_MS}
           >
             <WalletTypeCard
               badge={wallet.badge}

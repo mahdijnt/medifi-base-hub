@@ -1,20 +1,8 @@
 import { cn } from "@/lib/utils";
-
-const cardOuterClass = cn(
-  "relative rounded-xl p-px",
-  "bg-gradient-to-br from-black/10 via-black/5 to-black/[0.03]",
-  "dark:from-white/20 dark:via-white/10 dark:to-white/5",
-);
-
-const cardInnerClass = cn(
-  "relative flex h-full flex-col rounded-[11px] p-5",
-  "border border-black/[0.08] bg-black/[0.04] backdrop-blur-[12px]",
-  "dark:border-white/15 dark:bg-white/[0.08]",
-  "shadow-sm",
-);
+import { dashPrimaryBorder, dashPrimaryGlow, dashPrimarySurface } from "@/components/dashboard/glass-styles";
 
 const shimmerBarClass =
-  "skeleton-shimmer rounded-md bg-foreground/[0.06] dark:bg-foreground/[0.08]";
+  "skeleton-shimmer rounded-md bg-foreground/[0.07] dark:bg-foreground/[0.09]";
 
 type MetricSkeletonProps = {
   className?: string;
@@ -23,12 +11,12 @@ type MetricSkeletonProps = {
 export function MetricSkeleton({ className }: MetricSkeletonProps) {
   return (
     <article
-      className={cn(cardOuterClass, className)}
+      className={cn(dashPrimaryBorder, "relative rounded-xl p-px", className)}
       aria-hidden="true"
     >
-      <div className={cardInnerClass}>
+      <div className={cn(dashPrimarySurface, "relative flex h-full flex-col rounded-[11px] p-5")}>
         <div
-          className="pointer-events-none absolute inset-0 rounded-[11px] bg-[radial-gradient(ellipse_at_top_right,var(--glow),transparent_60%)] opacity-40"
+          className={cn(dashPrimaryGlow, "opacity-30")}
           aria-hidden="true"
         />
 
@@ -44,12 +32,12 @@ export function MetricSkeleton({ className }: MetricSkeletonProps) {
 export function WalletBreakdownSkeleton({ className }: MetricSkeletonProps) {
   return (
     <article
-      className={cn(cardOuterClass, className)}
+      className={cn(dashPrimaryBorder, "relative rounded-xl p-px", className)}
       aria-hidden="true"
     >
-      <div className={cardInnerClass}>
+      <div className={cn(dashPrimarySurface, "relative flex h-full flex-col rounded-[11px] p-5")}>
         <div
-          className="pointer-events-none absolute inset-0 rounded-[11px] bg-[radial-gradient(ellipse_at_top_right,var(--glow),transparent_60%)] opacity-40"
+          className={cn(dashPrimaryGlow, "opacity-30")}
           aria-hidden="true"
         />
 

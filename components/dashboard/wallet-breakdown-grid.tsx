@@ -3,7 +3,7 @@ import { WalletBreakdownSkeleton } from "@/components/loading";
 import type { WalletMetricsBreakdown } from "@/lib/types/analytics";
 import { cn } from "@/lib/utils";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 type WalletBreakdownGridProps = {
   wallets: WalletMetricsBreakdown[] | null;
@@ -85,7 +85,7 @@ export function WalletBreakdownGrid({
 
   return (
     <div className="space-y-4">
-      <FadeIn delay={STAGGER_MS * 5} duration={500}>
+      <FadeIn delay={STAGGER_MS * 2}>
         <h2 className="text-sm font-medium uppercase tracking-wider text-muted">
           Per-Wallet Breakdown
         </h2>
@@ -106,8 +106,7 @@ export function WalletBreakdownGrid({
           {items.map((wallet, index) => (
             <FadeIn
               key={wallet.id}
-              delay={STAGGER_MS * 6 + index * STAGGER_MS}
-              duration={500}
+              delay={STAGGER_MS * 2 + index * STAGGER_MS}
             >
               <WalletBreakdownCard wallet={wallet} />
             </FadeIn>

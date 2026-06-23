@@ -1,4 +1,6 @@
 import { cn } from "@/lib/utils";
+import { getContrastTextClass } from "@/utils/color/autoTextColor";
+import { dashPrimaryBorder, dashPrimaryGlow, dashPrimarySurface } from "./glass-styles";
 
 type MetricCardProps = {
   label: string;
@@ -17,33 +19,39 @@ export function MetricCard({
     <article
       className={cn(
         "group relative rounded-xl p-px",
-        "bg-gradient-to-br from-black/10 via-black/5 to-black/[0.03]",
-        "dark:from-white/20 dark:via-white/10 dark:to-white/5",
+        dashPrimaryBorder,
         "transition-transform duration-300 ease-out hover:scale-[1.03]",
       )}
     >
       <div
         className={cn(
           "relative flex h-full flex-col rounded-[11px] p-5",
-          "border border-black/[0.08] bg-black/[0.04] backdrop-blur-[12px]",
-          "dark:border-white/15 dark:bg-white/[0.08]",
-          "shadow-sm transition-shadow duration-300",
-          "group-hover:shadow-[0_0_24px_-4px_var(--glow)]",
+          dashPrimarySurface,
+          "transition-shadow duration-300",
+          "group-hover:shadow-[0_0_20px_-8px_var(--glow-blue-soft)]",
+          "sm:group-hover:shadow-[0_0_24px_-8px_var(--glow-blue-soft)]",
         )}
       >
         <div
-          className="pointer-events-none absolute inset-0 rounded-[11px] bg-[radial-gradient(ellipse_at_top_right,var(--glow),transparent_60%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          className={cn(
+            dashPrimaryGlow,
+            "opacity-0 transition-opacity duration-300 group-hover:opacity-100",
+          )}
           aria-hidden="true"
         />
 
         <div className="relative flex flex-1 flex-col">
-          <p className="text-sm font-medium text-muted">{label}</p>
+          <p className={cn("text-sm font-medium", getContrastTextClass("glow-blue", "label"))}>
+            {label}
+          </p>
 
           <p
             className={cn(
               "mt-2 font-mono font-semibold tracking-tight",
               compactValue ? "text-base leading-snug" : "text-3xl",
-              loading ? "text-foreground/40" : "text-foreground",
+              loading
+                ? getContrastTextClass("glow-blue", "muted")
+                : getContrastTextClass("glow-blue", "value"),
             )}
             aria-busy={loading}
           >

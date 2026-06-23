@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { getContrastTextClass } from "@/utils/color/autoTextColor";
 
 type ContractEntry = {
   address: string;
@@ -51,19 +52,24 @@ function ContractRow({ contract }: ContractRowProps) {
       <div
         className={cn(
           "group flex flex-col gap-2 rounded-lg px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between",
-          "border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-blue-400/5 to-transparent",
+          "border border-[var(--accent-blue)]/18 bg-gradient-to-br from-[var(--accent-blue)]/8 via-[var(--accent-cyan)]/4 to-transparent",
           "backdrop-blur-sm transition-all duration-300",
-          "hover:border-blue-400/40 hover:shadow-[0_0_16px_-2px_rgba(59,130,246,0.35)]",
-          "hover:from-blue-500/20",
+          "hover:border-[var(--accent-cyan)]/28 hover:shadow-[0_0_14px_-4px_var(--glow-blue-soft)]",
+          "sm:hover:shadow-[0_0_16px_-4px_var(--glow-blue-soft)]",
+          "hover:from-[var(--accent-blue)]/12",
         )}
       >
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <span
-            className="size-1.5 shrink-0 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.8)]"
+            className="size-1.5 shrink-0 rounded-full bg-[var(--accent-blue)] shadow-[0_0_4px_var(--glow-blue-soft)]"
             aria-hidden="true"
           />
           <span
-            className="truncate font-mono text-sm font-medium text-foreground/90 transition-colors group-hover:text-foreground"
+            className={cn(
+              "truncate font-mono text-sm font-medium transition-colors",
+              getContrastTextClass("glow-blue", "value"),
+              "group-hover:text-slate-900 dark:group-hover:text-white/95",
+            )}
             title={contract.address}
           >
             {truncateAddress(contract.address)}
@@ -73,7 +79,7 @@ function ContractRow({ contract }: ContractRowProps) {
         <div className="flex shrink-0 items-center gap-2 pl-3.5 sm:pl-0">
           <time
             dateTime={contract.deployedAt.toISOString()}
-            className="text-xs text-blue-200/60 dark:text-blue-300/60"
+            className={cn("text-xs", getContrastTextClass("glow-teal", "muted"))}
           >
             {formatDeploymentDate(contract.deployedAt)}
           </time>
@@ -84,12 +90,13 @@ function ContractRow({ contract }: ContractRowProps) {
             aria-label={`Copy contract address ${contract.address}`}
             className={cn(
               "inline-flex size-8 items-center justify-center rounded-md",
-              "border border-blue-500/25 bg-blue-500/10 text-blue-300/80",
+              "border border-[var(--accent-purple)]/22 bg-[var(--accent-purple)]/8 text-violet-800",
               "transition-all duration-200",
-              "hover:border-blue-400/50 hover:bg-blue-500/20 hover:text-blue-200",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50",
+              "hover:border-[var(--accent-purple)]/35 hover:bg-[var(--accent-purple)]/14 hover:text-violet-900",
+              "dark:text-violet-200 dark:hover:text-violet-100",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-purple)]/40",
               copied &&
-                "border-emerald-500/40 bg-emerald-500/15 text-emerald-400 shadow-[0_0_12px_-2px_rgba(52,211,153,0.5)]",
+                "border-emerald-500/40 bg-emerald-500/15 text-emerald-700 shadow-[0_0_10px_-2px_rgba(52,211,153,0.4)] dark:text-emerald-400",
             )}
           >
             {copied ? (
@@ -116,7 +123,7 @@ function ContractRow({ contract }: ContractRowProps) {
 
       {copied ? (
         <p
-          className="mt-1 text-right text-xs font-medium text-emerald-400/90 transition-opacity duration-200"
+          className="mt-1 text-right text-xs font-medium text-emerald-700 transition-opacity duration-200 dark:text-emerald-400/90"
           role="status"
         >
           Copied!
@@ -134,7 +141,12 @@ export function ContractList({
 
   if (contracts.length === 0) {
     return (
-      <p className="rounded-lg border border-blue-500/15 bg-blue-500/[0.04] px-4 py-3 text-sm text-muted backdrop-blur-sm">
+      <p
+        className={cn(
+          "rounded-lg border border-[var(--accent-blue)]/15 bg-[var(--accent-blue)]/[0.04] px-4 py-3 text-sm backdrop-blur-sm",
+          getContrastTextClass("glow-blue", "muted"),
+        )}
+      >
         No contracts deployed for this wallet.
       </p>
     );
@@ -148,10 +160,11 @@ export function ContractList({
         aria-expanded={expanded}
         className={cn(
           "flex w-full items-center justify-between rounded-lg px-3 py-2",
-          "border border-blue-500/20 bg-blue-500/[0.06] text-sm font-medium text-blue-200/80",
-          "backdrop-blur-sm transition-all duration-300",
-          "hover:border-blue-400/35 hover:bg-blue-500/10 hover:text-blue-100",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50",
+          "border border-[var(--accent-purple)]/18 bg-[var(--accent-purple)]/[0.06] text-sm font-medium backdrop-blur-sm",
+          getContrastTextClass("glow-purple", "label"),
+          "transition-all duration-300",
+          "hover:border-[var(--accent-purple)]/30 hover:bg-[var(--accent-purple)]/10",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-purple)]/40",
         )}
       >
         <span>
@@ -160,7 +173,7 @@ export function ContractList({
         </span>
         <span
           className={cn(
-            "text-blue-300/70 transition-transform duration-300",
+            "text-violet-700/80 transition-transform duration-300 dark:text-violet-300/70",
             expanded ? "rotate-180" : "rotate-0",
           )}
           aria-hidden="true"

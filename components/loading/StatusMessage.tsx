@@ -18,7 +18,7 @@ export function StatusMessage({
   return (
     <p
       className={cn(
-        "text-sm font-medium text-muted transition-opacity duration-500 ease-out",
+        "text-sm font-medium text-muted transition-opacity duration-200 ease-out",
         active ? "opacity-100" : "opacity-0",
         className,
       )}

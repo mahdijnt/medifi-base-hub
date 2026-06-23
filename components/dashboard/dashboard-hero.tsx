@@ -7,12 +7,12 @@ import {
   glassRadialGlow,
 } from "./glass-styles";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 export function DashboardHero() {
   return (
     <header aria-labelledby="dashboard-heading">
-      <FadeIn duration={450}>
+      <FadeIn>
         <div
           className={cn(
             glassGradientBorder,
@@ -37,7 +37,7 @@ export function DashboardHero() {
             <div className="relative space-y-6">
               <SectionBadge badge="BA" label="Dashboard" />
 
-              <FadeIn delay={STAGGER_MS} duration={500}>
+              <FadeIn delay={STAGGER_MS}>
                 <h1
                   id="dashboard-heading"
                   className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
@@ -46,7 +46,7 @@ export function DashboardHero() {
                 </h1>
               </FadeIn>
 
-              <FadeIn delay={STAGGER_MS * 2} duration={500}>
+              <FadeIn delay={STAGGER_MS * 2}>
                 <p className="max-w-2xl text-sm leading-relaxed text-foreground/75 sm:text-base">
                   Analyze activity across Base ecosystem wallets.
                 </p>

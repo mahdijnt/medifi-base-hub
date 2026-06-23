@@ -3,7 +3,7 @@ import { MetricSkeleton } from "@/components/loading";
 import type { CombinedBuilderTotals } from "@/lib/types/analytics";
 import { MetricCard } from "./metric-card";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 type CombinedSummaryProps = {
   totals: CombinedBuilderTotals | null;
@@ -60,7 +60,6 @@ export function CombinedSummary({ totals, loading }: CombinedSummaryProps) {
         <FadeIn
           key={metric.label}
           delay={STAGGER_MS * 2 + index * STAGGER_MS}
-          duration={500}
         >
           <MetricCard label={metric.label} value={metric.value} />
         </FadeIn>

@@ -38,7 +38,7 @@ import {
 } from "./transaction-metrics-section";
 import type { WalletAddresses } from "@/types/wallet";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 const EMPTY_ADDRESSES: WalletAddresses = {
   base: "",
@@ -116,7 +116,7 @@ type AnalyzePhase = "idle" | "loading" | "results" | "error";
 export function DashboardShell() {
   const [addresses, setAddresses] = useState<WalletAddresses>(EMPTY_ADDRESSES);
   const [analyzePhase, setAnalyzePhase] = useState<AnalyzePhase>("idle");
-  const [metrics, setMetrics] = useState<CombinedBuilderMetrics | null>(null);
+  const [combined, setCombined] = useState<CombinedBuilderMetrics | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | undefined>();
@@ -259,7 +259,7 @@ export function DashboardShell() {
     setAnalyzePhase("loading");
     setActiveWallets(validation.wallets);
     setWalletCount(validation.wallets.length);
-    setMetrics(null);
+    setCombined(null);
     setTransactions(buildTransactionLoadingState(addressesToAnalyze));
     setNfts(buildNftLoadingState(addressesToAnalyze));
     setContracts(buildContractLoadingState(addressesToAnalyze));
@@ -272,13 +272,13 @@ export function DashboardShell() {
     ]);
 
     if ("error" in result) {
-      setMetrics(null);
+      setCombined(null);
       setAnalyzeError(result.error);
       setAnalyzePhase("error");
       return;
     }
 
-    setMetrics(result.data);
+    setCombined(result.data);
     setAnalyzePhase("results");
   }, [fetchTransactionMetrics, fetchNftMetrics, fetchContractMetrics]);
 
@@ -347,7 +347,7 @@ export function DashboardShell() {
           />
 
           {formError ? (
-            <FadeIn duration={400}>
+            <FadeIn>
               <p
                 role="alert"
                 className="text-sm text-red-400/90"
@@ -358,7 +358,7 @@ export function DashboardShell() {
           ) : null}
 
           {validationError ? (
-            <FadeIn duration={400}>
+            <FadeIn>
               <p
                 role="alert"
                 className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
@@ -368,7 +368,7 @@ export function DashboardShell() {
             </FadeIn>
           ) : null}
 
-          <FadeIn delay={STAGGER_MS * 6} duration={500}>
+          <FadeIn delay={STAGGER_MS * 3}>
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
               <AnalyzeButton
                 onClick={handleAnalyze}
@@ -384,10 +384,10 @@ export function DashboardShell() {
         </div>
 
         {showMetrics ? (
-          <FadeIn delay={STAGGER_MS} duration={500}>
+          <FadeIn delay={STAGGER_MS}>
             <div className="space-y-10">
               <CombinedMetrics
-                metrics={metrics}
+                metrics={combined}
                 loading={isAnalyzing}
                 error={analyzeError}
                 walletCount={walletCount}

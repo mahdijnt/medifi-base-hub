@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { getContrastTextClass } from "@/utils/color/autoTextColor";
 
 type CollectionListProps = {
   collections: string[];
@@ -11,7 +12,12 @@ export function CollectionList({
 }: CollectionListProps) {
   if (collections.length === 0) {
     return (
-      <p className="rounded-lg border border-blue-500/15 bg-blue-500/[0.04] px-4 py-3 text-sm text-muted backdrop-blur-sm">
+      <p
+        className={cn(
+          "rounded-lg border border-[var(--accent-teal)]/15 bg-[var(--accent-teal)]/[0.04] px-4 py-3 text-sm backdrop-blur-sm",
+          getContrastTextClass("glow-teal", "muted"),
+        )}
+      >
         {emptyMessage}
       </p>
     );
@@ -27,17 +33,24 @@ export function CollectionList({
           <span
             className={cn(
               "group inline-flex w-full items-center rounded-lg px-3 py-2",
-              "border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-blue-400/5 to-transparent",
+              "border border-[var(--accent-teal)]/18 bg-gradient-to-br from-[var(--accent-teal)]/8 via-[var(--accent-cyan)]/4 to-transparent",
               "backdrop-blur-sm transition-all duration-300",
-              "hover:border-blue-400/40 hover:shadow-[0_0_16px_-2px_rgba(59,130,246,0.35)]",
-              "hover:from-blue-500/20",
+              "hover:border-[var(--accent-cyan)]/30 hover:shadow-[0_0_14px_-4px_var(--glow-teal-soft)]",
+              "sm:hover:shadow-[0_0_16px_-4px_var(--glow-teal-soft)]",
+              "hover:from-[var(--accent-teal)]/12",
             )}
           >
             <span
-              className="mr-2 size-1.5 shrink-0 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.8)]"
+              className="mr-2 size-1.5 shrink-0 rounded-full bg-[var(--accent-cyan)] shadow-[0_0_4px_var(--glow-cyan-soft)]"
               aria-hidden="true"
             />
-            <span className="truncate text-sm font-medium text-foreground/90 transition-colors group-hover:text-foreground">
+            <span
+              className={cn(
+                "truncate text-sm font-medium transition-colors",
+                getContrastTextClass("glow-teal", "value"),
+                "group-hover:text-slate-900 dark:group-hover:text-white/95",
+              )}
+            >
               {name}
             </span>
           </span>

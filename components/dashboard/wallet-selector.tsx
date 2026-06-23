@@ -2,7 +2,7 @@ import { FadeIn } from "@/components/ui/fade-in";
 import type { Wallet } from "@/types/wallet";
 import { cn } from "@/lib/utils";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 type WalletSelectorProps = {
   wallets: Wallet[];
@@ -20,7 +20,7 @@ export function WalletSelector({
   const selectedWallet = wallets.find((wallet) => wallet.id === selectedId);
 
   return (
-    <FadeIn delay={STAGGER_MS * 3} duration={500}>
+    <FadeIn delay={STAGGER_MS * 2}>
       <div
         className={cn(
           "group relative rounded-xl p-px",

@@ -8,7 +8,7 @@ type FadeInProps = {
   className?: string;
   /** Stagger delay in milliseconds */
   delay?: number;
-  /** Transition duration in milliseconds (400–600 recommended) */
+  /** Transition duration in milliseconds (100–180 recommended) */
   duration?: number;
 };
 
@@ -16,7 +16,7 @@ export function FadeIn({
   children,
   className,
   delay = 0,
-  duration = 500,
+  duration = 150,
 }: FadeInProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -44,7 +44,7 @@ export function FadeIn({
       ref={ref}
       className={cn(
         "ease-out will-change-[opacity,transform]",
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-2.5 opacity-0",
+        isVisible ? "translate-y-0 opacity-100" : "translate-y-1.5 opacity-0",
         className,
       )}
       style={{

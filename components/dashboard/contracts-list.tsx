@@ -2,7 +2,7 @@ import { FadeIn } from "@/components/ui/fade-in";
 import type { DeployedContract } from "@/lib/types/analytics";
 import { cn } from "@/lib/utils";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 const MAX_VISIBLE_CONTRACTS = 5;
 
 type ContractsListProps = {
@@ -40,13 +40,13 @@ export function ContractsList({
 
   return (
     <div className="space-y-4">
-      <FadeIn delay={STAGGER_MS * 10} duration={500}>
+      <FadeIn delay={STAGGER_MS * 2}>
         <h2 className="text-sm font-medium uppercase tracking-wider text-muted">
           Deployed Contracts
         </h2>
       </FadeIn>
 
-      <FadeIn delay={STAGGER_MS * 11} duration={500}>
+      <FadeIn delay={STAGGER_MS * 3}>
         <article
           className={cn(
             "relative rounded-xl p-px",

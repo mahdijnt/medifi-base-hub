@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CombinedSummary } from "@/components/dashboard/combined-summary";
-import { WalletBreakdownGrid } from "@/components/dashboard/wallet-breakdown-grid";
+import { CombinedAnalyticsSummary } from "@/components/dashboard/combined-analytics-summary";
 import { StatusMessage } from "@/components/loading";
 import { FadeIn } from "@/components/ui/fade-in";
 import type { CombinedBuilderMetrics } from "@/lib/types/analytics";
+import { getAccentLabelClass } from "@/utils/color/autoTextColor";
 
-const STAGGER_MS = 120;
+const STAGGER_MS = 80;
 
 const ANALYTICS_STATUS_MESSAGES = [
   "Analyzing transactions...",
@@ -15,7 +15,7 @@ const ANALYTICS_STATUS_MESSAGES = [
   "Analyzing contracts...",
 ] as const;
 
-const STATUS_REVEAL_MS = 450;
+const STATUS_REVEAL_MS = 180;
 
 type CombinedMetricsProps = {
   metrics: CombinedBuilderMetrics | null;
@@ -54,21 +54,23 @@ export function CombinedMetrics({
 
   return (
     <section aria-labelledby="combined-metrics-heading" className="space-y-6">
-      <FadeIn duration={450}>
+      <FadeIn>
         <div className="flex items-center gap-3">
           <span
-            className="inline-flex size-8 items-center justify-center rounded-lg border border-border bg-surface/60 font-mono text-[10px] font-medium text-muted"
+            className="inline-flex size-8 items-center justify-center rounded-lg border border-[var(--accent-blue)]/22 bg-[var(--accent-blue)]/8 font-mono text-[10px] font-medium text-blue-800 shadow-sm shadow-[var(--glow-blue-soft)] dark:text-blue-200"
             aria-hidden="true"
           >
             CM
           </span>
-          <p className="text-xs font-medium uppercase tracking-widest text-muted">
+          <p
+            className={`text-xs font-medium uppercase tracking-widest ${getAccentLabelClass("primary")}`}
+          >
             Combined Metrics
           </p>
         </div>
       </FadeIn>
 
-      <FadeIn delay={STAGGER_MS} duration={500}>
+      <FadeIn delay={STAGGER_MS}>
         <h2
           id="combined-metrics-heading"
           className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl"
@@ -76,17 +78,6 @@ export function CombinedMetrics({
           Builder Command Center
         </h2>
       </FadeIn>
-
-      {error ? (
-        <FadeIn delay={STAGGER_MS * 2} duration={500}>
-          <p
-            role="alert"
-            className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
-          >
-            {error}
-          </p>
-        </FadeIn>
-      ) : null}
 
       {loading ? (
         <div
@@ -105,15 +96,11 @@ export function CombinedMetrics({
         </div>
       ) : null}
 
-      <CombinedSummary
-        totals={metrics?.totals ?? null}
+      <CombinedAnalyticsSummary
+        combined={metrics}
         loading={loading}
-      />
-
-      <WalletBreakdownGrid
-        wallets={metrics?.perWallet ?? null}
-        loading={loading}
-        placeholderCount={walletCount}
+        error={error}
+        walletCount={walletCount}
       />
     </section>
   );
