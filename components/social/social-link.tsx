@@ -1,4 +1,9 @@
 import Image from "next/image";
+import {
+  identitySocialCapsule,
+  identitySocialCapsuleInner,
+  identitySocialHighlight,
+} from "@/components/identity/identity-theme";
 import { Tooltip } from "@/components/ui/tooltip";
 import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
@@ -8,6 +13,7 @@ type SocialLinkProps = {
   url: string;
   image: string;
   tooltipId: string;
+  variant?: "default" | "identity";
 };
 
 export function SocialLink({
@@ -15,7 +21,35 @@ export function SocialLink({
   url,
   image,
   tooltipId,
+  variant = "default",
 }: SocialLinkProps) {
+  if (variant === "identity") {
+    return (
+      <Tooltip content={url} id={tooltipId}>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-describedby={tooltipId}
+          aria-label={`${label} profile`}
+          className={identitySocialCapsule}
+        >
+          <span className={identitySocialCapsuleInner}>
+            <span className={identitySocialHighlight} aria-hidden="true" />
+            <Image
+              src={withBasePath(image)}
+              alt=""
+              width={24}
+              height={24}
+              className="relative size-6 object-contain"
+              aria-hidden="true"
+            />
+          </span>
+        </a>
+      </Tooltip>
+    );
+  }
+
   return (
     <Tooltip content={url} id={tooltipId}>
       <a

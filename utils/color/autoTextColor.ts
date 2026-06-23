@@ -7,6 +7,8 @@ export type BackgroundSurfaceType =
   | "glow-cyan"
   | "glow-purple"
   | "glass-blue"
+  | "identity-glow"
+  | "identity-card"
   | "interactive"
   | "muted";
 
@@ -92,6 +94,20 @@ export const CONTRAST_TEXT_MAP: Record<BackgroundSurfaceType, TextClassSet> = {
     heading: "text-slate-900 dark:text-white/95",
     muted: "text-slate-600 dark:text-slate-400",
     badge: "text-blue-800 dark:text-blue-200",
+  },
+  "identity-glow": {
+    label: "text-sky-400",
+    value: "text-white/95",
+    heading: "text-white/95",
+    muted: "text-slate-400",
+    badge: "text-teal-300",
+  },
+  "identity-card": {
+    label: "text-slate-400",
+    value: "text-white/95",
+    heading: "text-white/95",
+    muted: "text-slate-400/90",
+    badge: "text-sky-300/90",
   },
   interactive: {
     label: "text-slate-800 dark:text-slate-200",
