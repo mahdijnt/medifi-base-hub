@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { getCombinedBuilderMetrics } from "@/lib/services/combined";
+import { getContractDeploymentAnalytics } from "@/lib/services/contracts";
 import { getNftAnalytics } from "@/lib/services/nft";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
 import {
@@ -20,6 +21,11 @@ import { LoadBuilderWalletsButton } from "./load-builder-wallets-button";
 import { SupportedWalletTypes } from "./supported-wallet-types";
 import { WalletAnalytics } from "./wallet-analytics";
 import { WalletAddressPanel } from "./wallet-address-panel";
+import {
+  ContractMetricsSection,
+  type ContractMetrics,
+  type ContractsState,
+} from "./contract-metrics-section";
 import {
   NftMetricsSection,
   type NFTMetrics,
@@ -88,6 +94,23 @@ function buildNftLoadingState(addresses: WalletAddresses): NftsState {
   return state;
 }
 
+function buildContractLoadingState(addresses: WalletAddresses): ContractsState {
+  const state: ContractsState = {};
+
+  for (const { addressKey, stateKey } of TRANSACTION_WALLET_FIELDS) {
+    const address = addresses[addressKey].trim();
+    if (address) {
+      state[stateKey] = {
+        total: 0,
+        contracts: [],
+        loading: true,
+      };
+    }
+  }
+
+  return state;
+}
+
 type AnalyzePhase = "idle" | "loading" | "results" | "error";
 
 export function DashboardShell() {
@@ -108,6 +131,7 @@ export function DashboardShell() {
   const [walletCount, setWalletCount] = useState(0);
   const [transactions, setTransactions] = useState<TransactionsState>({});
   const [nfts, setNfts] = useState<NftsState>({});
+  const [contracts, setContracts] = useState<ContractsState>({});
 
   const fetchTransactionMetrics = useCallback(
     async (addressesToAnalyze: WalletAddresses) => {
@@ -185,6 +209,43 @@ export function DashboardShell() {
     [],
   );
 
+  const fetchContractMetrics = useCallback(
+    async (addressesToAnalyze: WalletAddresses) => {
+      const walletsToFetch = TRANSACTION_WALLET_FIELDS.flatMap(
+        ({ addressKey, stateKey }) => {
+          const address = addressesToAnalyze[addressKey].trim();
+          return address ? [{ stateKey, address }] : [];
+        },
+      );
+
+      await Promise.all(
+        walletsToFetch.map(async ({ stateKey, address }) => {
+          const result = await getContractDeploymentAnalytics(address);
+
+          const metrics: ContractMetrics =
+            "error" in result
+              ? {
+                  total: 0,
+                  contracts: [],
+                  loading: false,
+                  error: result.error,
+                }
+              : {
+                  total: result.data.total,
+                  contracts: result.data.contracts,
+                  loading: false,
+                };
+
+          setContracts((previous) => ({
+            ...previous,
+            [stateKey]: metrics,
+          }));
+        }),
+      );
+    },
+    [],
+  );
+
   const runAnalyze = useCallback(async (addressesToAnalyze: WalletAddresses) => {
     const validation = validateAddressesForAnalyze(addressesToAnalyze);
 
@@ -201,11 +262,13 @@ export function DashboardShell() {
     setMetrics(null);
     setTransactions(buildTransactionLoadingState(addressesToAnalyze));
     setNfts(buildNftLoadingState(addressesToAnalyze));
+    setContracts(buildContractLoadingState(addressesToAnalyze));
 
     const [result] = await Promise.all([
       getCombinedBuilderMetrics(validation.wallets),
       fetchTransactionMetrics(addressesToAnalyze),
       fetchNftMetrics(addressesToAnalyze),
+      fetchContractMetrics(addressesToAnalyze),
     ]);
 
     if ("error" in result) {
@@ -217,7 +280,7 @@ export function DashboardShell() {
 
     setMetrics(result.data);
     setAnalyzePhase("results");
-  }, [fetchTransactionMetrics, fetchNftMetrics]);
+  }, [fetchTransactionMetrics, fetchNftMetrics, fetchContractMetrics]);
 
   function clearWalletErrors() {
     setFormError(undefined);
@@ -333,6 +396,8 @@ export function DashboardShell() {
               <TransactionMetricsSection transactions={transactions} />
 
               <NftMetricsSection nfts={nfts} />
+
+              <ContractMetricsSection contracts={contracts} />
 
               {analyzePhase === "results" && activeWallets.length > 0 ? (
                 <WalletAnalytics wallets={activeWallets} />
