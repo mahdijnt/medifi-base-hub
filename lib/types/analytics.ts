@@ -35,6 +35,7 @@ export type NftAnalyticsResult = { data: NftAnalytics } | { error: string };
 export type DeployedContract = {
   address: string;
   deployedAt: Date;
+  transactionHash?: string;
 };
 
 export type ContractDeploymentAnalytics = {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BUILDER_WALLET_ADDRESSES } from "@/lib/runtimeWalletRegistry";
-import { getContractDeploymentAnalytics } from "@/lib/services/contracts";
+import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
 
 type UseDeployCountResult = {
   deployCount: number | null;
@@ -24,7 +24,7 @@ export function useDeployCount(
       setLoading(true);
       setError(null);
 
-      const result = await getContractDeploymentAnalytics(address);
+      const result = await fetchContractDeploymentAnalytics(address);
 
       if (cancelled) return;
 

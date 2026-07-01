@@ -5,9 +5,12 @@ export {
 } from "@/lib/api/alchemy";
 
 export {
-  BASESCAN_API_URL,
-  basescanRequest,
+  BASE_CHAIN_ID,
+  ETHERSCAN_V2_BASE,
+  etherscanV2Request,
+  getContractCreations,
   getDeployedContracts,
+  getNormalTransactions,
   getTransactions,
 } from "@/lib/api/basescan";
 

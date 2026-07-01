@@ -10,7 +10,7 @@ import {
 import { githubConfig } from "@/data/github";
 import { getTotalCommitCount, getWeb3RepoCount } from "@/lib/api/github";
 import { BUILDER_WALLET_ADDRESSES } from "@/lib/runtimeWalletRegistry";
-import { getContractDeploymentAnalytics } from "@/lib/services/contracts";
+import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
 
 type GoalMetrics = {
@@ -93,7 +93,7 @@ export function useGoalProgress(): UseGoalProgressResult {
         txResult,
       ] = await Promise.all([
         getTotalCommitCount(githubConfig.username),
-        getContractDeploymentAnalytics(BUILDER_WALLET_ADDRESSES.base),
+        fetchContractDeploymentAnalytics(BUILDER_WALLET_ADDRESSES.base),
         getWeb3RepoCount(githubConfig.username),
         getTransactionAnalytics(BUILDER_WALLET_ADDRESSES.farcaster),
       ]);

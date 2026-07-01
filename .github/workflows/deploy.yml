@@ -30,10 +30,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Disable API routes for static export
+        run: node scripts/toggle-api-routes.mjs disable
+
       - name: Build static export
         env:
           NEXT_PUBLIC_BASE_PATH: /medifi-base-hub
         run: npm run build
+
+      - name: Restore API routes
+        if: always()
+        run: node scripts/toggle-api-routes.mjs enable
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

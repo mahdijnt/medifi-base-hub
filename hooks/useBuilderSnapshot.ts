@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { githubConfig } from "@/data/github";
 import { getPublicRepoCount, getTotalCommitCount } from "@/lib/api/github";
 import { BUILDER_WALLET_ADDRESSES } from "@/lib/runtimeWalletRegistry";
-import { getContractDeploymentAnalytics } from "@/lib/services/contracts";
+import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
 
 /** Farcaster wallet activity weighted higher for social onchain identity */
@@ -73,7 +73,7 @@ export function useBuilderSnapshot(): UseBuilderSnapshotResult {
         farcasterTxResult,
         baseTxResult,
       ] = await Promise.all([
-        getContractDeploymentAnalytics(BUILDER_WALLET_ADDRESSES.base),
+        fetchContractDeploymentAnalytics(BUILDER_WALLET_ADDRESSES.base),
         getTotalCommitCount(githubConfig.username),
         getPublicRepoCount(githubConfig.username),
         getTransactionAnalytics(BUILDER_WALLET_ADDRESSES.farcaster),

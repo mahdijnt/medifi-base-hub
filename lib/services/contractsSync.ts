@@ -1,3 +1,5 @@
+import "server-only";
+
 import { getDeployedContracts } from "@/lib/api/basescan";
 import type {
   DeployedContractRecord,

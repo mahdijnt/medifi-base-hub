@@ -1,4 +1,6 @@
-import { basescanRequest } from "@/lib/api/basescan";
+import "server-only";
+
+import { getContractCreations } from "@/lib/api/basescan";
 import { hasBasescanApiKey } from "@/lib/env";
 import type {
   ContractDeploymentAnalytics,
@@ -6,78 +8,50 @@ import type {
   DeployedContract,
 } from "@/lib/types/analytics";
 
-const PAGE_OFFSET = 1000;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
-type BasescanTx = {
-  from: string;
-  to: string;
-  contractAddress: string;
-  timeStamp: string;
+type CacheEntry = {
+  expiresAt: number;
+  result: ContractDeploymentAnalyticsResult;
 };
 
-function isContractCreation(tx: BasescanTx, walletAddress: string): boolean {
-  const fromMatches =
-    tx.from?.toLowerCase() === walletAddress.toLowerCase();
-  const hasContractAddress = Boolean(tx.contractAddress?.trim());
+const analyticsCache = new Map<string, CacheEntry>();
 
-  return fromMatches && hasContractAddress;
+function cacheKey(address: string): string {
+  return address.trim().toLowerCase();
 }
 
-async function fetchAllTransactions(address: string): Promise<BasescanTx[]> {
-  const transactions: BasescanTx[] = [];
-  let page = 1;
-
-  while (true) {
-    const pageResult = await basescanRequest<BasescanTx[]>({
-      module: "account",
-      action: "txlist",
-      address,
-      startblock: "0",
-      endblock: "99999999",
-      sort: "asc",
-      page: String(page),
-      offset: String(PAGE_OFFSET),
-    });
-
-    if (!Array.isArray(pageResult) || pageResult.length === 0) {
-      break;
-    }
-
-    transactions.push(...pageResult);
-
-    if (pageResult.length < PAGE_OFFSET) {
-      break;
-    }
-
-    page += 1;
+function getCached(address: string): ContractDeploymentAnalyticsResult | null {
+  const entry = analyticsCache.get(cacheKey(address));
+  if (!entry) {
+    return null;
   }
 
-  return transactions;
+  if (Date.now() > entry.expiresAt) {
+    analyticsCache.delete(cacheKey(address));
+    return null;
+  }
+
+  console.log(`[basescan] cache hit for ${address}`);
+  return entry.result;
 }
 
-function computeContractAnalytics(
-  transactions: BasescanTx[],
-  walletAddress: string,
-): ContractDeploymentAnalytics {
-  const contracts: DeployedContract[] = [];
+function setCache(
+  address: string,
+  result: ContractDeploymentAnalyticsResult,
+): void {
+  analyticsCache.set(cacheKey(address), {
+    expiresAt: Date.now() + CACHE_TTL_MS,
+    result,
+  });
+}
 
-  for (const tx of transactions) {
-    if (!isContractCreation(tx, walletAddress)) {
-      continue;
-    }
-
-    const deployedAt = new Date(Number(tx.timeStamp) * 1000);
-    if (Number.isNaN(deployedAt.getTime())) {
-      continue;
-    }
-
-    contracts.push({
-      address: tx.contractAddress.trim(),
-      deployedAt,
-    });
-  }
-
-  contracts.sort((a, b) => a.deployedAt.getTime() - b.deployedAt.getTime());
+function toAnalytics(creations: Awaited<ReturnType<typeof getContractCreations>>): ContractDeploymentAnalytics {
+  const contracts: DeployedContract[] = creations.map((creation) => ({
+    address: creation.address,
+    deployedAt: creation.deployedAt,
+    transactionHash: creation.transactionHash,
+  }));
 
   return {
     total: contracts.length,
@@ -86,11 +60,8 @@ function computeContractAnalytics(
 }
 
 /**
- * Fetches onchain transaction history from Basescan and derives contract
- * deployment analytics for a wallet.
- *
- * Uses NEXT_PUBLIC_BASESCAN_API_KEY in the browser (static export). The key is
- * visible client-side — same exposure model as NEXT_PUBLIC_ALCHEMY_API_KEY.
+ * Server-only: fetches contract deployment analytics via Etherscan API V2.
+ * Results are cached in memory for 5 minutes per address.
  */
 export async function getContractDeploymentAnalytics(
   address: string,
@@ -101,22 +72,34 @@ export async function getContractDeploymentAnalytics(
     return { error: "Wallet address is required." };
   }
 
+  const cached = getCached(normalizedAddress);
+  if (cached) {
+    return cached;
+  }
+
   if (!hasBasescanApiKey()) {
     return {
-      error:
-        "Missing NEXT_PUBLIC_BASESCAN_API_KEY. Add it to .env.local to load contract deployment analytics.",
+      error: "Invalid or missing Basescan API key",
     };
   }
 
   try {
-    const transactions = await fetchAllTransactions(normalizedAddress);
-    return { data: computeContractAnalytics(transactions, normalizedAddress) };
+    console.log(
+      `[basescan] computing deployment analytics for ${normalizedAddress}`,
+    );
+    const creations = await getContractCreations(normalizedAddress);
+    const result: ContractDeploymentAnalyticsResult = {
+      data: toAnalytics(creations),
+    };
+    setCache(normalizedAddress, result);
+    return result;
   } catch (error) {
     const message =
       error instanceof Error
         ? error.message
         : "Failed to fetch contract deployment analytics.";
 
+    console.warn(`[basescan] getContractDeploymentAnalytics failed: ${message}`);
     return { error: message };
   }
 }

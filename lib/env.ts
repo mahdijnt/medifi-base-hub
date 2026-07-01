@@ -5,17 +5,14 @@
  * so `npm run build` succeeds without `.env.local` while analytics clients
  * are unused.
  *
- * NEXT_PUBLIC_ALCHEMY_API_KEY and NEXT_PUBLIC_BASESCAN_API_KEY may be used
- * client-side (static export / GitHub Pages). Exposing API keys in the browser
- * is acceptable for read-only analytics but allows quota abuse — restrict keys
- * by domain where the provider supports it.
+ * NEXT_PUBLIC_ALCHEMY_API_KEY may be used client-side (static export).
  *
- * BASESCAN_API_KEY is a server-only fallback for future API routes or SSR.
+ * BASESCAN_API_KEY is server-only — contract analytics use `/api/contracts/*`
+ * route handlers on Vercel. Do not expose Basescan keys via NEXT_PUBLIC_*.
  */
 
 const ENV_KEYS = {
   alchemy: "NEXT_PUBLIC_ALCHEMY_API_KEY",
-  basescanPublic: "NEXT_PUBLIC_BASESCAN_API_KEY",
   basescanServer: "BASESCAN_API_KEY",
   githubPublic: "NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN",
   githubServer: "GITHUB_PERSONAL_ACCESS_TOKEN",
@@ -33,10 +30,7 @@ export function hasAlchemyApiKey(): boolean {
 }
 
 export function hasBasescanApiKey(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_BASESCAN_API_KEY?.trim() ||
-      process.env.BASESCAN_API_KEY?.trim(),
-  );
+  return Boolean(process.env.BASESCAN_API_KEY?.trim());
 }
 
 export function getAlchemyApiKey(): string {
@@ -47,24 +41,14 @@ export function getAlchemyApiKey(): string {
   return key;
 }
 
-/**
- * Prefers NEXT_PUBLIC_BASESCAN_API_KEY (client dashboard) and falls back to
- * BASESCAN_API_KEY for server-side use.
- */
+/** Server-only Basescan / Etherscan V2 API key (Base mainnet via chainid 8453). */
 export function getBasescanApiKey(): string {
-  const publicKey = process.env.NEXT_PUBLIC_BASESCAN_API_KEY?.trim();
-  if (publicKey) {
-    return publicKey;
-  }
-
   const serverKey = process.env.BASESCAN_API_KEY?.trim();
   if (serverKey) {
     return serverKey;
   }
 
-  throw missingKeyError(
-    `${ENV_KEYS.basescanPublic} (or ${ENV_KEYS.basescanServer})`,
-  );
+  throw missingKeyError(ENV_KEYS.basescanServer);
 }
 
 /**

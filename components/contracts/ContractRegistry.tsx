@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ContractCard } from "./ContractCard";
-import { getDeployedContracts } from "@/lib/api/basescan";
+import { fetchDeployedContracts } from "@/lib/services/contracts-client";
 import { ContractRegistrySkeleton } from "@/components/loading/ContractRegistrySkeleton";
 import { FadeIn } from "@/components/ui/fade-in";
 import type { DeployedContractRecord } from "@/lib/types/contract";
@@ -71,7 +71,7 @@ export function ContractRegistry({ walletAddresses }: ContractRegistryProps) {
       }
 
       const results = await Promise.all(
-        addresses.map((address) => getDeployedContracts(address)),
+        addresses.map((address) => fetchDeployedContracts(address)),
       );
 
       if (cancelled) {

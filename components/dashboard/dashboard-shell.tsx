@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { getCombinedBuilderMetrics } from "@/lib/services/combined";
-import { getContractDeploymentAnalytics } from "@/lib/services/contracts";
+import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
 import { getNftAnalytics } from "@/lib/services/nft";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
 import {
@@ -220,7 +220,7 @@ export function DashboardShell() {
 
       await Promise.all(
         walletsToFetch.map(async ({ stateKey, address }) => {
-          const result = await getContractDeploymentAnalytics(address);
+          const result = await fetchContractDeploymentAnalytics(address);
 
           const metrics: ContractMetrics =
             "error" in result

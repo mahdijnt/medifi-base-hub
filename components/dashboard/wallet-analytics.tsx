@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ContractsList } from "@/components/dashboard/contracts-list";
 import { MetricsGrid } from "@/components/dashboard/metrics-grid";
 import { WalletSelector } from "@/components/dashboard/wallet-selector";
-import { getContractDeploymentAnalytics } from "@/lib/services/contracts";
+import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
 import { getNftAnalytics } from "@/lib/services/nft";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
 import type {
@@ -74,7 +74,7 @@ export function WalletAnalytics({ wallets }: WalletAnalyticsProps) {
       const [txResult, nftResult, contractResult] = await Promise.all([
         getTransactionAnalytics(address),
         getNftAnalytics(address),
-        getContractDeploymentAnalytics(address),
+        fetchContractDeploymentAnalytics(address),
       ]);
 
       if (cancelled) {

@@ -1,5 +1,5 @@
-import { hasAlchemyApiKey, hasBasescanApiKey } from "@/lib/env";
-import { getContractDeploymentAnalytics } from "@/lib/services/contracts";
+import { hasAlchemyApiKey } from "@/lib/env";
+import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
 import { getNftAnalytics } from "@/lib/services/nft";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
 import type {
@@ -16,10 +16,6 @@ function getMissingApiKeyMessage(): string | null {
 
   if (!hasAlchemyApiKey()) {
     missing.push("NEXT_PUBLIC_ALCHEMY_API_KEY");
-  }
-
-  if (!hasBasescanApiKey()) {
-    missing.push("NEXT_PUBLIC_BASESCAN_API_KEY");
   }
 
   if (missing.length === 0) {
@@ -41,7 +37,7 @@ async function fetchWalletMetrics(
     const [txResult, nftResult, contractResult] = await Promise.all([
       getTransactionAnalytics(wallet.address),
       getNftAnalytics(wallet.address),
-      getContractDeploymentAnalytics(wallet.address),
+      fetchContractDeploymentAnalytics(wallet.address),
     ]);
 
     if ("error" in txResult) {
