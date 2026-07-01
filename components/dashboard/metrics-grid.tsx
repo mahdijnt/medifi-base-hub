@@ -2,6 +2,7 @@ import { FadeIn } from "@/components/ui/fade-in";
 import type {
   ContractDeploymentAnalytics,
   NftAnalytics,
+  NftCollection,
   TransactionAnalytics,
 } from "@/lib/types/analytics";
 import { MetricCard } from "./metric-card";
@@ -46,7 +47,7 @@ function formatTotal(total: number | null, loading: boolean): string {
 }
 
 function formatCollections(
-  collections: string[] | null,
+  collections: NftCollection[] | null,
   loading: boolean,
 ): string {
   if (loading) {
@@ -57,12 +58,16 @@ function formatCollections(
     return "—";
   }
 
-  if (collections.length <= MAX_VISIBLE_COLLECTIONS) {
-    return collections.join(", ");
+  const names = collections.map((collection) =>
+    collection.count > 1 ? `${collection.name} (${collection.count})` : collection.name,
+  );
+
+  if (names.length <= MAX_VISIBLE_COLLECTIONS) {
+    return names.join(", ");
   }
 
-  const visible = collections.slice(0, MAX_VISIBLE_COLLECTIONS).join(", ");
-  const remaining = collections.length - MAX_VISIBLE_COLLECTIONS;
+  const visible = names.slice(0, MAX_VISIBLE_COLLECTIONS).join(", ");
+  const remaining = names.length - MAX_VISIBLE_COLLECTIONS;
   return `${visible} +${remaining} more`;
 }
 

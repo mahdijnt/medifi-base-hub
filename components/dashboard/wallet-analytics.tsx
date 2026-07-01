@@ -5,7 +5,7 @@ import { ContractsList } from "@/components/dashboard/contracts-list";
 import { MetricsGrid } from "@/components/dashboard/metrics-grid";
 import { WalletSelector } from "@/components/dashboard/wallet-selector";
 import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
-import { getNftAnalytics } from "@/lib/services/nft";
+import { fetchNftAnalytics } from "@/lib/services/nft-client";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
 import type {
   ContractDeploymentAnalytics,
@@ -71,38 +71,50 @@ export function WalletAnalytics({ wallets }: WalletAnalyticsProps) {
       setNftError(null);
       setContractError(null);
 
-      const [txResult, nftResult, contractResult] = await Promise.all([
-        getTransactionAnalytics(address),
-        getNftAnalytics(address),
-        fetchContractDeploymentAnalytics(address),
-      ]);
+      try {
+        const [txResult, nftResult, contractResult] = await Promise.all([
+          getTransactionAnalytics(address),
+          fetchNftAnalytics(address),
+          fetchContractDeploymentAnalytics(address),
+        ]);
 
-      if (cancelled) {
-        return;
-      }
+        if (cancelled) {
+          return;
+        }
 
-      if ("error" in txResult) {
+        if ("error" in txResult) {
+          setTransactionAnalytics(null);
+          setTxError(txResult.error);
+        } else {
+          setTransactionAnalytics(txResult.data);
+          setTxError(null);
+        }
+
+        if ("error" in nftResult) {
+          setNftAnalytics(null);
+          setNftError(nftResult.error);
+        } else {
+          setNftAnalytics(nftResult.data);
+          setNftError(null);
+        }
+
+        if ("error" in contractResult) {
+          setContractAnalytics(null);
+          setContractError(contractResult.error);
+        } else {
+          setContractAnalytics(contractResult.data);
+          setContractError(null);
+        }
+      } catch {
+        if (cancelled) {
+          return;
+        }
         setTransactionAnalytics(null);
-        setTxError(txResult.error);
-      } else {
-        setTransactionAnalytics(txResult.data);
-        setTxError(null);
-      }
-
-      if ("error" in nftResult) {
         setNftAnalytics(null);
-        setNftError(nftResult.error);
-      } else {
-        setNftAnalytics(nftResult.data);
-        setNftError(null);
-      }
-
-      if ("error" in contractResult) {
         setContractAnalytics(null);
-        setContractError(contractResult.error);
-      } else {
-        setContractAnalytics(contractResult.data);
-        setContractError(null);
+        setTxError("Analytics failed to load");
+        setNftError("Analytics failed to load");
+        setContractError("Analytics failed to load");
       }
 
       setTxLoading(false);

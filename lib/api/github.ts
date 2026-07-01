@@ -1,7 +1,10 @@
+import "server-only";
+
 import { githubConfig } from "@/data/github";
-import { getGithubToken, hasGithubToken } from "@/lib/env";
+import { getGithubToken, hasGithubToken } from "@/lib/env.server";
 
 const GITHUB_API_URL = "https://api.github.com";
+const REQUEST_TIMEOUT_MS = 15_000;
 
 type GithubRepo = {
   name: string;
@@ -40,14 +43,24 @@ async function githubRequest<T>(
     headers.Authorization = `Bearer ${getGithubToken()}`;
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   let response: Response;
 
   try {
-    response = await fetch(`${GITHUB_API_URL}${path}`, { headers });
-  } catch {
-    throw new Error(
-      "GitHub API request failed (network or CORS). Ensure NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN is set.",
-    );
+    response = await fetch(`${GITHUB_API_URL}${path}`, {
+      headers,
+      signal: controller.signal,
+      cache: "no-store",
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("GitHub API request timed out after 15 seconds.");
+    }
+    throw new Error("GitHub API request failed (network error).");
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!response.ok) {
@@ -174,6 +187,56 @@ export async function getWeb3RepoCount(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to count Web3 repos.";
+    return { error: message };
+  }
+}
+
+/**
+ * Fetches all GitHub metrics (commits, public repos, Web3 repos) with a
+ * single repo-list request so upstream rate limits are hit only once.
+ */
+export async function getGithubMetrics(
+  username: string,
+): Promise<
+  | {
+      data: {
+        totalCommits: number;
+        publicRepoCount: number;
+        web3RepoCount: number;
+      };
+    }
+  | { error: string }
+> {
+  if (!hasGithubToken()) {
+    return {
+      error:
+        "Missing NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN. Add it to .env.local to load GitHub analytics.",
+    };
+  }
+
+  try {
+    const repos = await getUserRepos(username);
+    const nonForkRepos = repos.filter((repo) => !repo.fork);
+
+    const publicRepoCount = nonForkRepos.length;
+    const web3RepoCount = nonForkRepos.filter(isWeb3Repo).length;
+
+    const trackedRepos = resolveTrackedRepos(username, repos);
+    const counts = await Promise.all(
+      trackedRepos.map((repo) => {
+        const [owner, name] = repo.full_name.split("/");
+        return getCommitCountForRepo(owner, name, username);
+      }),
+    );
+    const totalCommits = counts.reduce((sum, count) => sum + count, 0);
+
+    return { data: { totalCommits, publicRepoCount, web3RepoCount } };
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to fetch GitHub metrics.";
+
     return { error: message };
   }
 }

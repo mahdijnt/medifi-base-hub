@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { githubConfig } from "@/data/github";
-import { getPublicRepoCount, getTotalCommitCount } from "@/lib/api/github";
+import { fetchGithubMetrics } from "@/lib/services/github-client";
 import { BUILDER_WALLET_ADDRESSES } from "@/lib/runtimeWalletRegistry";
 import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
@@ -66,58 +66,73 @@ export function useBuilderSnapshot(): UseBuilderSnapshotResult {
         identityScore: { data: null, loading: true, error: null },
       });
 
-      const [
-        deployResult,
-        commitsResult,
-        projectsResult,
-        farcasterTxResult,
-        baseTxResult,
-      ] = await Promise.all([
-        fetchContractDeploymentAnalytics(BUILDER_WALLET_ADDRESSES.base),
-        getTotalCommitCount(githubConfig.username),
-        getPublicRepoCount(githubConfig.username),
-        getTransactionAnalytics(BUILDER_WALLET_ADDRESSES.farcaster),
-        getTransactionAnalytics(BUILDER_WALLET_ADDRESSES.base),
-      ]);
+      try {
+        const [
+          deployResult,
+          githubResult,
+          farcasterTxResult,
+          baseTxResult,
+        ] = await Promise.all([
+          fetchContractDeploymentAnalytics(BUILDER_WALLET_ADDRESSES.base),
+          fetchGithubMetrics(githubConfig.username),
+          getTransactionAnalytics(BUILDER_WALLET_ADDRESSES.farcaster),
+          getTransactionAnalytics(BUILDER_WALLET_ADDRESSES.base),
+        ]);
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      const deployments: MetricState<number> = {
-        loading: false,
-        data: "data" in deployResult ? deployResult.data.total : null,
-        error: "error" in deployResult ? deployResult.error : null,
-      };
+        const deployments: MetricState<number> = {
+          loading: false,
+          data: "data" in deployResult ? deployResult.data.total : null,
+          error: "error" in deployResult ? deployResult.error : null,
+        };
 
-      const commits: MetricState<number> = {
-        loading: false,
-        data: "data" in commitsResult ? commitsResult.data : null,
-        error: "error" in commitsResult ? commitsResult.error : null,
-      };
+        const commits: MetricState<number> = {
+          loading: false,
+          data: "data" in githubResult ? githubResult.data.totalCommits : null,
+          error: "error" in githubResult ? githubResult.error : null,
+        };
 
-      const projects: MetricState<number> = {
-        loading: false,
-        data: "data" in projectsResult ? projectsResult.data : null,
-        error: "error" in projectsResult ? projectsResult.error : null,
-      };
+        const projects: MetricState<number> = {
+          loading: false,
+          data:
+            "data" in githubResult ? githubResult.data.publicRepoCount : null,
+          error: "error" in githubResult ? githubResult.error : null,
+        };
 
-      const farcasterTx =
-        "data" in farcasterTxResult ? farcasterTxResult.data.total : null;
-      const baseTx = "data" in baseTxResult ? baseTxResult.data.total : null;
+        const farcasterTx =
+          "data" in farcasterTxResult ? farcasterTxResult.data.total : null;
+        const baseTx = "data" in baseTxResult ? baseTxResult.data.total : null;
 
-      const txErrors: string[] = [];
-      if ("error" in farcasterTxResult) txErrors.push(farcasterTxResult.error);
-      if ("error" in baseTxResult) txErrors.push(baseTxResult.error);
+        const txErrors: string[] = [];
+        if ("error" in farcasterTxResult) txErrors.push(farcasterTxResult.error);
+        if ("error" in baseTxResult) txErrors.push(baseTxResult.error);
 
-      const identityScore: MetricState<number> = {
-        loading: false,
-        data:
-          farcasterTx !== null && baseTx !== null
-            ? computeOnchainIdentityScore(farcasterTx, baseTx)
-            : null,
-        error: txErrors.length > 0 ? txErrors[0] : null,
-      };
+        const identityScore: MetricState<number> = {
+          loading: false,
+          data:
+            farcasterTx !== null && baseTx !== null
+              ? computeOnchainIdentityScore(farcasterTx, baseTx)
+              : null,
+          error: txErrors.length > 0 ? txErrors[0] : null,
+        };
 
-      setMetrics({ deployments, commits, projects, identityScore });
+        setMetrics({ deployments, commits, projects, identityScore });
+      } catch {
+        if (cancelled) return;
+
+        const failed: MetricState<number> = {
+          loading: false,
+          data: null,
+          error: "Metrics unavailable",
+        };
+        setMetrics({
+          deployments: failed,
+          commits: failed,
+          projects: failed,
+          identityScore: failed,
+        });
+      }
     }
 
     void load();

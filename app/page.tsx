@@ -6,6 +6,7 @@ import { BuilderSnapshot } from "@/components/home";
 import { BuilderStory } from "@/components/story";
 import { BuilderTimeline } from "@/components/timeline";
 import { ContractRegistry } from "@/components/contracts";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { CONTRACT_REGISTRY_WALLET_ADDRESSES } from "@/data/contracts";
 
 export default function Home() {
@@ -15,10 +16,20 @@ export default function Home() {
       <BuilderStory />
       <BuilderTimeline />
       <FeaturedProjects />
-      <PortfolioSection />
-      <GoalsWithData />
-      <BuilderSnapshot />
-      <ContractRegistry walletAddresses={CONTRACT_REGISTRY_WALLET_ADDRESSES} />
+      <ErrorBoundary sectionName="Portfolio metrics">
+        <PortfolioSection />
+      </ErrorBoundary>
+      <ErrorBoundary sectionName="Goals">
+        <GoalsWithData />
+      </ErrorBoundary>
+      <ErrorBoundary sectionName="Builder snapshot">
+        <BuilderSnapshot />
+      </ErrorBoundary>
+      <ErrorBoundary sectionName="Contract registry">
+        <ContractRegistry
+          walletAddresses={CONTRACT_REGISTRY_WALLET_ADDRESSES}
+        />
+      </ErrorBoundary>
     </>
   );
 }

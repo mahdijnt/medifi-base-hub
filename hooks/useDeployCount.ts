@@ -24,16 +24,22 @@ export function useDeployCount(
       setLoading(true);
       setError(null);
 
-      const result = await fetchContractDeploymentAnalytics(address);
+      try {
+        const result = await fetchContractDeploymentAnalytics(address);
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      if ("error" in result) {
+        if ("error" in result) {
+          setDeployCount(null);
+          setError(result.error);
+        } else {
+          setDeployCount(result.data.total);
+          setError(null);
+        }
+      } catch {
+        if (cancelled) return;
         setDeployCount(null);
-        setError(result.error);
-      } else {
-        setDeployCount(result.data.total);
-        setError(null);
+        setError("Contract analytics unavailable");
       }
 
       setLoading(false);

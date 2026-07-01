@@ -5,18 +5,13 @@
  * so `npm run build` succeeds without `.env.local` while analytics clients
  * are unused.
  *
- * NEXT_PUBLIC_ALCHEMY_API_KEY may be used client-side (static export).
- *
- * BASESCAN_API_KEY is server-only — contract analytics use `/api/contracts/*`
- * route handlers on Vercel. Do not expose Basescan keys via NEXT_PUBLIC_*.
+ * Only NEXT_PUBLIC_ALCHEMY_API_KEY lives here: it is intentionally
+ * client-reachable (transaction analytics calls Alchemy JSON-RPC from the
+ * browser). The Basescan key and GitHub PAT are server-only — see
+ * lib/env.server.ts — so they are never inlined into client bundles.
  */
 
-const ENV_KEYS = {
-  alchemy: "NEXT_PUBLIC_ALCHEMY_API_KEY",
-  basescanServer: "BASESCAN_API_KEY",
-  githubPublic: "NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN",
-  githubServer: "GITHUB_PERSONAL_ACCESS_TOKEN",
-} as const;
+const ALCHEMY_ENV_KEY = "NEXT_PUBLIC_ALCHEMY_API_KEY";
 
 function missingKeyError(key: string): Error {
   return new Error(
@@ -29,52 +24,10 @@ export function hasAlchemyApiKey(): boolean {
   return Boolean(process.env.NEXT_PUBLIC_ALCHEMY_API_KEY?.trim());
 }
 
-export function hasBasescanApiKey(): boolean {
-  return Boolean(process.env.BASESCAN_API_KEY?.trim());
-}
-
 export function getAlchemyApiKey(): string {
   const key = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY?.trim();
   if (!key) {
-    throw missingKeyError(ENV_KEYS.alchemy);
+    throw missingKeyError(ALCHEMY_ENV_KEY);
   }
   return key;
-}
-
-/** Server-only Basescan / Etherscan V2 API key (Base mainnet via chainid 8453). */
-export function getBasescanApiKey(): string {
-  const serverKey = process.env.BASESCAN_API_KEY?.trim();
-  if (serverKey) {
-    return serverKey;
-  }
-
-  throw missingKeyError(ENV_KEYS.basescanServer);
-}
-
-/**
- * Prefers NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN (required for static export
- * client fetch) and falls back to GITHUB_PERSONAL_ACCESS_TOKEN for server use.
- */
-export function hasGithubToken(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN?.trim() ||
-      process.env.GITHUB_PERSONAL_ACCESS_TOKEN?.trim(),
-  );
-}
-
-export function getGithubToken(): string {
-  const publicToken =
-    process.env.NEXT_PUBLIC_GITHUB_PERSONAL_ACCESS_TOKEN?.trim();
-  if (publicToken) {
-    return publicToken;
-  }
-
-  const serverToken = process.env.GITHUB_PERSONAL_ACCESS_TOKEN?.trim();
-  if (serverToken) {
-    return serverToken;
-  }
-
-  throw missingKeyError(
-    `${ENV_KEYS.githubPublic} (or ${ENV_KEYS.githubServer})`,
-  );
 }

@@ -47,3 +47,26 @@ export function NftCollectionSkeleton({ className }: NftMetricSkeletonProps) {
     </div>
   );
 }
+
+export function NftItemSkeleton({ className }: NftMetricSkeletonProps) {
+  return (
+    <div
+      className={cn("grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4", className)}
+      aria-hidden="true"
+    >
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div
+          key={index}
+          className={cn(dashPrimaryBorder, "relative rounded-xl p-px")}
+        >
+          <div className={cn(dashPrimarySurface, "rounded-[11px] p-3")}>
+            <div className={cn(shimmerBarClass, "aspect-square w-full rounded-lg")} />
+            <div className={cn(shimmerBarClass, "mt-3 h-4 w-3/4")} />
+            <div className={cn(shimmerBarClass, "mt-2 h-3 w-1/2")} />
+            <div className={cn(shimmerBarClass, "mt-3 h-3 w-28")} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

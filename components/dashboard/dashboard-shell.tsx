@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { getCombinedBuilderMetrics } from "@/lib/services/combined";
 import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
-import { getNftAnalytics } from "@/lib/services/nft";
+import { fetchNftAnalytics } from "@/lib/services/nft-client";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
 import {
   BUILDER_WALLET_ADDRESSES,
@@ -183,7 +183,7 @@ export function DashboardShell() {
 
       await Promise.all(
         walletsToFetch.map(async ({ stateKey, address }) => {
-          const result = await getNftAnalytics(address);
+          const result = await fetchNftAnalytics(address);
 
           const metrics: NFTMetrics =
             "error" in result

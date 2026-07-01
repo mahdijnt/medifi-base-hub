@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { githubConfig } from "@/data/github";
-import { getTotalCommitCount } from "@/lib/api/github";
+import { fetchGithubMetrics } from "@/lib/services/github-client";
 
 type UseGithubCommitsResult = {
   commits: number | null;
@@ -24,16 +24,22 @@ export function useGithubCommits(
       setLoading(true);
       setError(null);
 
-      const result = await getTotalCommitCount(username);
+      try {
+        const result = await fetchGithubMetrics(username);
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      if ("error" in result) {
+        if ("error" in result) {
+          setCommits(null);
+          setError(result.error);
+        } else {
+          setCommits(result.data.totalCommits);
+          setError(null);
+        }
+      } catch {
+        if (cancelled) return;
         setCommits(null);
-        setError(result.error);
-      } else {
-        setCommits(result.data);
-        setError(null);
+        setError("GitHub analytics unavailable");
       }
 
       setLoading(false);

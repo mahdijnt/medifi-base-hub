@@ -8,7 +8,7 @@ import {
   type Goal,
 } from "@/data/goals";
 import { githubConfig } from "@/data/github";
-import { getTotalCommitCount, getWeb3RepoCount } from "@/lib/api/github";
+import { fetchGithubMetrics } from "@/lib/services/github-client";
 import { BUILDER_WALLET_ADDRESSES } from "@/lib/runtimeWalletRegistry";
 import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
@@ -86,38 +86,39 @@ export function useGoalProgress(): UseGoalProgressResult {
       setLoading(true);
       setError(null);
 
-      const [
-        commitsResult,
-        deployResult,
-        web3Result,
-        txResult,
-      ] = await Promise.all([
-        getTotalCommitCount(githubConfig.username),
-        fetchContractDeploymentAnalytics(BUILDER_WALLET_ADDRESSES.base),
-        getWeb3RepoCount(githubConfig.username),
-        getTransactionAnalytics(BUILDER_WALLET_ADDRESSES.farcaster),
-      ]);
+      try {
+        const [githubResult, deployResult, txResult] = await Promise.all([
+          fetchGithubMetrics(githubConfig.username),
+          fetchContractDeploymentAnalytics(BUILDER_WALLET_ADDRESSES.base),
+          getTransactionAnalytics(BUILDER_WALLET_ADDRESSES.farcaster),
+        ]);
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      const errors: string[] = [];
+        const errors: string[] = [];
 
-      const nextMetrics: GoalMetrics = {
-        githubCommits:
-          "data" in commitsResult ? commitsResult.data : null,
-        baseDeployments:
-          "data" in deployResult ? deployResult.data.total : null,
-        web3Repos: "data" in web3Result ? web3Result.data : null,
-        farcasterTxs: "data" in txResult ? txResult.data.total : null,
-      };
+        const nextMetrics: GoalMetrics = {
+          githubCommits:
+            "data" in githubResult ? githubResult.data.totalCommits : null,
+          baseDeployments:
+            "data" in deployResult ? deployResult.data.total : null,
+          web3Repos:
+            "data" in githubResult ? githubResult.data.web3RepoCount : null,
+          farcasterTxs: "data" in txResult ? txResult.data.total : null,
+        };
 
-      if ("error" in commitsResult) errors.push(commitsResult.error);
-      if ("error" in deployResult) errors.push(deployResult.error);
-      if ("error" in web3Result) errors.push(web3Result.error);
-      if ("error" in txResult) errors.push(txResult.error);
+        if ("error" in githubResult) errors.push(githubResult.error);
+        if ("error" in deployResult) errors.push(deployResult.error);
+        if ("error" in txResult) errors.push(txResult.error);
 
-      setMetrics(nextMetrics);
-      setError(errors.length > 0 ? errors[0] : null);
+        setMetrics(nextMetrics);
+        setError(errors.length > 0 ? errors[0] : null);
+      } catch {
+        if (cancelled) return;
+        setMetrics(EMPTY_METRICS);
+        setError("Metrics unavailable");
+      }
+
       setLoading(false);
     }
 

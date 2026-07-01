@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getBasescanApiKey, hasBasescanApiKey } from "@/lib/env";
+import { getBasescanApiKey, hasBasescanApiKey } from "@/lib/env.server";
 import type { Transaction } from "@/lib/types/analytics";
 import type {
   DeployedContractRecord,
@@ -40,6 +40,18 @@ export type BasescanNormalizedError =
   | "api_error"
   | "no_records";
 
+/** Thrown when BaseScan cannot serve the request and Blockscout should be tried. */
+export class BasescanFallbackError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BasescanFallbackError";
+  }
+}
+
+export function isBasescanFallbackError(error: unknown): boolean {
+  return error instanceof BasescanFallbackError;
+}
+
 export type BasescanTx = {
   hash: string;
   from: string;
@@ -52,6 +64,8 @@ type BasescanInternalTx = {
   hash: string;
   from: string;
   to: string;
+  contractAddress?: string;
+  type?: string;
   timeStamp: string;
 };
 
@@ -96,13 +110,47 @@ async function enforceRateLimit(): Promise<void> {
   await queued;
 }
 
-function isNoRecordsResponse(message: string): boolean {
+function isNoRecordsResponse(message: string, result?: unknown): boolean {
+  const candidates = [message];
+  if (typeof result === "string") {
+    candidates.push(result);
+  }
+
+  return candidates.some((value) => {
+    const normalized = value.trim().toLowerCase();
+    return NO_RECORD_MESSAGES.some((entry) => normalized.includes(entry));
+  });
+}
+
+function extractApiErrorDetail<T>(json: EtherscanV2Response<T>): string {
+  const message = json.message?.trim() ?? "";
+  const resultText =
+    typeof json.result === "string" ? json.result.trim() : "";
+
+  if (resultText) {
+    if (message.toUpperCase() === "NOTOK" || !message) {
+      return resultText;
+    }
+    return `${message}: ${resultText}`;
+  }
+
+  return message || "Unknown Basescan API error";
+}
+
+function isUnsupportedChainError(message: string): boolean {
   const normalized = message.trim().toLowerCase();
-  return NO_RECORD_MESSAGES.some((entry) => normalized.includes(entry));
+  return (
+    normalized.includes("free api access is not supported") ||
+    normalized.includes("not supported for this chain")
+  );
 }
 
 function classifyApiMessage(message: string): BasescanNormalizedError {
   const normalized = message.trim().toLowerCase();
+
+  if (isUnsupportedChainError(normalized)) {
+    return "no_records";
+  }
 
   if (
     normalized.includes("invalid api key") ||
@@ -211,12 +259,24 @@ export async function etherscanV2Request<T>(
         return json.result;
       }
 
-      if (json.status === "0" && isNoRecordsResponse(json.message)) {
+      if (json.status === "0" && isNoRecordsResponse(json.message, json.result)) {
         return (Array.isArray(json.result) ? json.result : []) as T;
       }
 
-      const detail = json.message?.trim() || "Unknown Basescan API error";
+      const detail = extractApiErrorDetail(json);
+
+      if (isUnsupportedChainError(detail)) {
+        console.warn(
+          `${logPrefix()} free-tier chain unsupported — signaling fallback`,
+        );
+        throw new BasescanFallbackError(detail);
+      }
+
       const kind = classifyApiMessage(detail);
+
+      if (kind === "deprecated_endpoint") {
+        throw new BasescanFallbackError(detail);
+      }
 
       if (kind === "rate_limited" && attempt < MAX_RETRIES - 1) {
         const backoffMs = 2 ** attempt * 500;
@@ -301,21 +361,20 @@ export async function getInternalTransactions(
   return Array.isArray(result) ? result : [];
 }
 
-/** Fetch all normal transactions for an address (paginated). */
-export async function fetchAllNormalTransactions(
-  address: string,
-): Promise<BasescanTx[]> {
-  const transactions: BasescanTx[] = [];
+async function fetchAllPaginated<T>(
+  fetchPage: (page: number) => Promise<T[]>,
+): Promise<T[]> {
+  const items: T[] = [];
   let page = 1;
 
   while (true) {
-    const pageResult = await getNormalTransactions(address, { page });
+    const pageResult = await fetchPage(page);
 
     if (pageResult.length === 0) {
       break;
     }
 
-    transactions.push(...pageResult);
+    items.push(...pageResult);
 
     if (pageResult.length < TX_PAGE_OFFSET) {
       break;
@@ -324,15 +383,65 @@ export async function fetchAllNormalTransactions(
     page += 1;
   }
 
-  return transactions;
+  return items;
 }
 
-function isContractCreation(tx: BasescanTx, walletAddress: string): boolean {
+/** Fetch all normal transactions for an address (paginated). */
+export async function fetchAllNormalTransactions(
+  address: string,
+): Promise<BasescanTx[]> {
+  return fetchAllPaginated((page) => getNormalTransactions(address, { page }));
+}
+
+/** Fetch all internal transactions for an address (paginated). */
+export async function fetchAllInternalTransactions(
+  address: string,
+): Promise<BasescanInternalTx[]> {
+  return fetchAllPaginated((page) =>
+    getInternalTransactions(address, { page }),
+  );
+}
+
+function isNormalTxContractCreation(
+  tx: BasescanTx,
+  walletAddress: string,
+): boolean {
   const fromMatches =
     tx.from?.toLowerCase() === walletAddress.toLowerCase();
   const hasContractAddress = Boolean(tx.contractAddress?.trim());
 
   return fromMatches && hasContractAddress;
+}
+
+function isInternalTxContractCreation(
+  tx: BasescanInternalTx,
+  walletAddress: string,
+): boolean {
+  const fromMatches =
+    tx.from?.toLowerCase() === walletAddress.toLowerCase();
+  const type = tx.type?.trim().toLowerCase();
+  const hasContractAddress = Boolean(tx.contractAddress?.trim());
+
+  return fromMatches && (hasContractAddress || type === "create");
+}
+
+function dedupeContractCreations(
+  creations: ContractCreation[],
+): ContractCreation[] {
+  const byAddress = new Map<string, ContractCreation>();
+
+  for (const creation of creations) {
+    const key = creation.address.toLowerCase();
+    const existing = byAddress.get(key);
+
+    if (!existing || creation.deployedAt < existing.deployedAt) {
+      byAddress.set(key, creation);
+    }
+  }
+
+  return [...byAddress.values()].sort(
+    (a, b) => a.deployedAt.getTime() - b.deployedAt.getTime(),
+  );
 }
 
 export type ContractCreation = {
@@ -342,18 +451,40 @@ export type ContractCreation = {
 };
 
 /**
- * Derives contract creations from normal txlist (from=wallet, contractAddress set).
- * Also supports V2 `getcontractcreation` for up to 5 known contract addresses.
+ * Derives contract creations from V2 account txlist (from=wallet, contractAddress set)
+ * and txlistinternal (factory / CREATE-style deployments).
  */
 export async function getContractCreations(
   walletAddress: string,
 ): Promise<ContractCreation[]> {
   const normalizedAddress = walletAddress.trim();
-  const transactions = await fetchAllNormalTransactions(normalizedAddress);
+
+  let transactions: BasescanTx[];
+  let internalTransactions: BasescanInternalTx[];
+
+  try {
+    [transactions, internalTransactions] = await Promise.all([
+      fetchAllNormalTransactions(normalizedAddress),
+      fetchAllInternalTransactions(normalizedAddress),
+    ]);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Basescan API request failed.";
+
+    if (isBasescanFallbackError(error) || isUnsupportedChainError(message)) {
+      console.warn(
+        `${logPrefix()} free-tier chain unsupported — signaling fallback`,
+      );
+      throw new BasescanFallbackError(message);
+    }
+
+    throw error;
+  }
+
   const creations: ContractCreation[] = [];
 
   for (const tx of transactions) {
-    if (!isContractCreation(tx, normalizedAddress)) {
+    if (!isNormalTxContractCreation(tx, normalizedAddress)) {
       continue;
     }
 
@@ -369,8 +500,29 @@ export async function getContractCreations(
     });
   }
 
-  creations.sort((a, b) => a.deployedAt.getTime() - b.deployedAt.getTime());
-  return creations;
+  for (const tx of internalTransactions) {
+    if (!isInternalTxContractCreation(tx, normalizedAddress)) {
+      continue;
+    }
+
+    const contractAddress = tx.contractAddress?.trim();
+    if (!contractAddress) {
+      continue;
+    }
+
+    const deployedAt = new Date(Number(tx.timeStamp) * 1000);
+    if (Number.isNaN(deployedAt.getTime())) {
+      continue;
+    }
+
+    creations.push({
+      address: contractAddress,
+      deployedAt,
+      transactionHash: tx.hash?.trim() ?? "",
+    });
+  }
+
+  return dedupeContractCreations(creations);
 }
 
 /** V2 contract module: lookup creation metadata for up to 5 contract addresses. */
@@ -443,7 +595,8 @@ export async function getDeployedContracts(
 
   if (!hasBasescanApiKey()) {
     return {
-      error: "Invalid or missing Basescan API key",
+      error:
+        "Missing NEXT_PUBLIC_BASESCAN_API_KEY. Add it to .env.local to load contract analytics.",
     };
   }
 

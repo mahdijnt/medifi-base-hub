@@ -10,14 +10,16 @@ type SerializedContract = {
   transactionHash?: string;
 };
 
-type ContractAnalyticsApiResponse =
-  | {
-      data: {
-        total: number;
-        contracts: SerializedContract[];
-      };
-    }
-  | { error: string };
+type ContractAnalyticsApiPayload = {
+  total: number;
+  contracts: SerializedContract[];
+};
+
+type ContractAnalyticsApiResponse = {
+  success?: boolean;
+  error?: string;
+  data?: ContractAnalyticsApiPayload;
+};
 
 type DeployedContractApiRecord = {
   contractName: string;
@@ -27,9 +29,11 @@ type DeployedContractApiRecord = {
   basescanUrl: string;
 };
 
-type DeployedContractsApiResponse =
-  | { data: DeployedContractApiRecord[] }
-  | { error: string };
+type DeployedContractsApiResponse = {
+  success?: boolean;
+  error?: string;
+  data?: DeployedContractApiRecord[];
+};
 
 const STATIC_EXPORT_HINT =
   "Contract analytics requires a server deployment (e.g. Vercel). Static export / GitHub Pages cannot run API routes.";
@@ -58,8 +62,12 @@ async function readJsonResponse<T>(response: Response): Promise<T | { error: str
 function parseAnalyticsResponse(
   body: ContractAnalyticsApiResponse,
 ): ContractDeploymentAnalyticsResult {
-  if ("error" in body) {
-    return { error: body.error };
+  if (body.success === false || body.error) {
+    return { error: body.error ?? "Contract analytics unavailable" };
+  }
+
+  if (!body.data) {
+    return { error: "Contract analytics unavailable" };
   }
 
   return {
@@ -77,7 +85,7 @@ function parseAnalyticsResponse(
 }
 
 /**
- * Client-side fetch for contract deployment analytics via `/api/contracts/[address]`.
+ * Client-side fetch for contract deployment analytics via `/api/basescan/contracts`.
  * Never calls Basescan directly — API key stays server-side.
  */
 export async function fetchContractDeploymentAnalytics(
@@ -91,13 +99,15 @@ export async function fetchContractDeploymentAnalytics(
 
   try {
     const response = await fetch(
-      withBasePath(`/api/contracts/${encodeURIComponent(normalizedAddress)}`),
+      withBasePath(
+        `/api/basescan/contracts?address=${encodeURIComponent(normalizedAddress)}`,
+      ),
       { cache: "no-store" },
     );
 
     const body = await readJsonResponse<ContractAnalyticsApiResponse>(response);
-    if ("error" in body && typeof body.error === "string") {
-      return { error: body.error };
+    if ("error" in body && !("data" in body)) {
+      return { error: body.error ?? "Contract analytics unavailable" };
     }
 
     return parseAnalyticsResponse(body as ContractAnalyticsApiResponse);
@@ -132,13 +142,21 @@ export async function fetchDeployedContracts(
     );
 
     const body = await readJsonResponse<DeployedContractsApiResponse>(response);
-    if ("error" in body && typeof body.error === "string") {
-      return { error: body.error };
+    if ("error" in body && !("data" in body)) {
+      return { error: body.error ?? "Contract analytics unavailable" };
     }
 
-    const success = body as { data: DeployedContractApiRecord[] };
+    const payload = body as DeployedContractsApiResponse;
+    if (payload.success === false || payload.error) {
+      return { error: payload.error ?? "Contract analytics unavailable" };
+    }
+
+    if (!payload.data) {
+      return { error: "Contract analytics unavailable" };
+    }
+
     return {
-      data: success.data.map((contract) => ({
+      data: payload.data.map((contract) => ({
         contractName: contract.contractName,
         contractAddress: contract.contractAddress,
         description: contract.description,

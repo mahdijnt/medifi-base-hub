@@ -3,6 +3,7 @@
 import { FadeIn } from "@/components/ui/fade-in";
 import { NftCollectionSkeleton, NftMetricSkeleton, StatusMessage } from "@/components/loading";
 import { CollectionList } from "@/components/nft/CollectionList";
+import type { NftCollection } from "@/lib/types/analytics";
 import { cn } from "@/lib/utils";
 import { getAccentLabelClass, getContrastTextClass } from "@/utils/color/autoTextColor";
 import {
@@ -16,7 +17,7 @@ const STAGGER_MS = 80;
 
 export type NFTMetrics = {
   total: number;
-  collections: string[];
+  collections: NftCollection[];
   loading?: boolean;
   error?: string;
 };

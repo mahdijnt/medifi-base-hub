@@ -1,6 +1,6 @@
 import { hasAlchemyApiKey } from "@/lib/env";
 import { fetchContractDeploymentAnalytics } from "@/lib/services/contracts-client";
-import { getNftAnalytics } from "@/lib/services/nft";
+import { fetchNftAnalytics } from "@/lib/services/nft-client";
 import { getTransactionAnalytics } from "@/lib/services/transactions";
 import type {
   CombinedBuilderMetrics,
@@ -36,7 +36,7 @@ async function fetchWalletMetrics(
   try {
     const [txResult, nftResult, contractResult] = await Promise.all([
       getTransactionAnalytics(wallet.address),
-      getNftAnalytics(wallet.address),
+      fetchNftAnalytics(wallet.address),
       fetchContractDeploymentAnalytics(wallet.address),
     ]);
 

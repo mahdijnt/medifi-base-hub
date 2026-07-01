@@ -25,9 +25,26 @@ export type TransactionAnalyticsResult =
   | { data: TransactionAnalytics }
   | { error: string };
 
+export type NftCollection = {
+  name: string;
+  contractAddress?: string;
+  count: number;
+  marketplaceUrl?: string;
+};
+
+export type NftItem = {
+  contractAddress: string;
+  tokenId: string;
+  name: string;
+  imageUrl?: string;
+  collectionName: string;
+  marketplaceUrl: string;
+};
+
 export type NftAnalytics = {
   total: number;
-  collections: string[];
+  collections: NftCollection[];
+  items?: NftItem[];
 };
 
 export type NftAnalyticsResult = { data: NftAnalytics } | { error: string };
@@ -70,3 +87,11 @@ export type CombinedBuilderMetrics = {
 export type CombinedBuilderMetricsResult =
   | { data: CombinedBuilderMetrics }
   | { error: string };
+
+export type GithubMetrics = {
+  totalCommits: number;
+  publicRepoCount: number;
+  web3RepoCount: number;
+};
+
+export type GithubMetricsResult = { data: GithubMetrics } | { error: string };

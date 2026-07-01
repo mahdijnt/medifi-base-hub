@@ -1,5 +1,5 @@
 export { MetricSkeleton, WalletBreakdownSkeleton } from "./MetricSkeleton";
-export { NftMetricSkeleton, NftCollectionSkeleton } from "./NftMetricSkeleton";
+export { NftMetricSkeleton, NftCollectionSkeleton, NftItemSkeleton } from "./NftMetricSkeleton";
 export {
   ContractMetricSkeleton,
   ContractListSkeleton,

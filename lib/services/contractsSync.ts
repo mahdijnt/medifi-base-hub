@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getDeployedContracts } from "@/lib/api/basescan";
+import { getDeployedContractsRegistry } from "@/lib/services/contracts";
 import type {
   DeployedContractRecord,
   NormalizedContract,
@@ -60,7 +60,7 @@ export async function fetchContractsFromBasescan(
 
   const results = await Promise.all(
     normalizedAddresses.map(async (walletAddress) => {
-      const result = await getDeployedContracts(walletAddress);
+      const result = await getDeployedContractsRegistry(walletAddress);
       return { walletAddress, result };
     }),
   );
